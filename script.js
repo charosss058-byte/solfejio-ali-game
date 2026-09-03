@@ -1,6 +1,6 @@
+
 document.addEventListener('DOMContentLoaded', () => {
     const video = document.getElementById('aliVideo');
-    const videoSource = document.getElementById('videoSource');
     const feedbackText = document.getElementById('feedbackText');
     const buttons = document.querySelectorAll('.note-btn');
 
@@ -16,10 +16,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const notes = ['DO', 'RE', 'MI', 'FA', 'SOL', 'LA', 'SI'];
     let currentTargetNote = '';
-
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    let audioCtx = null;
 
     function playAudioNote(note) {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
         if (audioCtx.state === 'suspended') {
             audioCtx.resume();
         }
@@ -28,32 +30,38 @@ document.addEventListener('DOMContentLoaded', () => {
         osc.type = 'sine';
         osc.frequency.setValueAtTime(noteFrequencies[note], audioCtx.currentTime);
         gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 1.5);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 1.2);
         osc.connect(gain);
         gain.connect(audioCtx.destination);
         osc.start();
-        osc.stop(audioCtx.currentTime + 1.5);
+        osc.stop(audioCtx.currentTime + 1.2);
     }
 
-    function changeVideo(srcName) {
-        videoSource.src = srcName;
-        video.load();
-        video.play().catch(e => console.log('Autoplay restriction:', e));
+    function playVideo(fileName) {
+        video.src = fileName;
+        video.currentTime = 0;
+        const playPromise = video.play();
+        if (playPromise !== undefined) {
+            playPromise.catch(error => {
+                console.log('Video autoplay status:', error);
+            });
+        }
     }
 
     function startNewTask() {
         currentTargetNote = notes[Math.floor(Math.random() * notes.length)];
         feedbackText.textContent = `Топшириқ: ${currentTargetNote} нотасини топинг!`;
-        changeVideo('Task_Prompt.mp4');
+        playVideo('Task_Prompt.mp4');
     }
 
-    video.addEventListener('ended', () => {
-        if (videoSource.getAttribute('src') === 'Greeting.mp4' || 
-            videoSource.getAttribute('src') === 'Praise.mp4' || 
-            videoSource.getAttribute('src') === 'Encouragement.mp4') {
-            setTimeout(startNewTask, 1000);
+    // Видео тугаганда кейингисига ўтиш
+    video.onended = () => {
+        const currentSrc = video.src.split('/').pop();
+        
+        if (currentSrc === 'Greeting.mp4' || currentSrc === 'Praise.mp4' || currentSrc === 'Encouragement.mp4') {
+            setTimeout(startNewTask, 500);
         }
-    });
+    };
 
     buttons.forEach(button => {
         button.addEventListener('click', () => {
@@ -61,16 +69,17 @@ document.addEventListener('DOMContentLoaded', () => {
             playAudioNote(selectedNote);
 
             if (!currentTargetNote) {
+                startNewTask();
                 return;
             }
 
             if (selectedNote === currentTargetNote) {
                 feedbackText.textContent = 'Баракалла! Тўғри топдингиз!';
-                changeVideo('Praise.mp4');
+                playVideo('Praise.mp4');
             } else {
                 feedbackText.textContent = 'Қайтадан уриниб кўринг!';
-                changeVideo('Encouragement.mp4');
+                playVideo('Encouragement.mp4');
             }
         });
     });
-});
+});    
