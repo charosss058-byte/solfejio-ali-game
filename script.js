@@ -1,5 +1,6 @@
 
-document.addEventListener('DOMContentLoaded', () => {
+
+ document.addEventListener('DOMContentLoaded', () => {
     const video = document.getElementById('aliVideo');
     const feedbackText = document.getElementById('feedbackText');
     const buttons = document.querySelectorAll('.note-btn');
@@ -15,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const notes = ['DO', 'RE', 'MI', 'FA', 'SOL', 'LA', 'SI'];
-    let currentTargetNote = '';
+    let currentTargetNote = 'DO'; // Бошланғич топшириқ
     let audioCtx = null;
 
     function playAudioNote(note) {
@@ -37,49 +38,36 @@ document.addEventListener('DOMContentLoaded', () => {
         osc.stop(audioCtx.currentTime + 1.2);
     }
 
-    function playVideo(fileName) {
-        video.src = fileName;
-        video.currentTime = 0;
-        const playPromise = video.play();
-        if (playPromise !== undefined) {
-            playPromise.catch(error => {
-                console.log('Video autoplay status:', error);
-            });
-        }
+    function switchVideo(videoName) {
+        video.src = videoName;
+        video.load();
+        video.play().catch(err => console.log("Video block error:", err));
     }
 
-    function startNewTask() {
-        currentTargetNote = notes[Math.floor(Math.random() * notes.length)];
-        feedbackText.textContent = `Топшириқ: ${currentTargetNote} нотасини топинг!`;
-        playVideo('Task_Prompt.mp4');
-    }
-
-    // Видео тугаганда кейингисига ўтиш
-    video.onended = () => {
-        const currentSrc = video.src.split('/').pop();
-        
-        if (currentSrc === 'Greeting.mp4' || currentSrc === 'Praise.mp4' || currentSrc === 'Encouragement.mp4') {
-            setTimeout(startNewTask, 500);
-        }
-    };
-
+    // Нота тугмалари босилганда
     buttons.forEach(button => {
         button.addEventListener('click', () => {
             const selectedNote = button.getAttribute('data-note');
+            
+            // 1. Овоз чиқариш
             playAudioNote(selectedNote);
 
-            if (!currentTargetNote) {
-                startNewTask();
-                return;
-            }
-
+            // 2. Жавобни текшириш ва видеони алмаштириш
             if (selectedNote === currentTargetNote) {
                 feedbackText.textContent = 'Баракалла! Тўғри топдингиз!';
-                playVideo('Praise.mp4');
+                switchVideo('Praise.mp4');
+                
+                // 3 дақиқадан сўнг янги савол бериш
+                setTimeout(() => {
+                    currentTargetNote = notes[Math.floor(Math.random() * notes.length)];
+                    feedbackText.textContent = `Энди ${currentTargetNote} нотасини топинг!`;
+                    switchVideo('Task_Prompt.mp4');
+                }, 3000);
             } else {
                 feedbackText.textContent = 'Қайтадан уриниб кўринг!';
-                playVideo('Encouragement.mp4');
+                switchVideo('Encouragement.mp4');
             }
         });
     });
-});    
+});
+          
