@@ -1,35 +1,181 @@
+
 <!DOCTYPE html>
 <html lang="uz">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Solfejio 1-Sinf</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-</head>
-<body>
-    <div class="game-container">
-        <!-- Ali Video Player -->
-        <div class="video-box">
-            <video id="aliVideo" autoplay playsinline>
-                <source src="Greeting.mp4" type="video/mp4">
-            </video>
-        </div>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        <!-- Interactive Buttons -->
-        <div class="controls-box">
-            <h2 id="instructionText">Notalarni o'rganamiz!</h2>
-            <div class="notes-grid">
-                <button class="note-btn do" onclick="checkNote('Do')">DO</button>
-                <button class="note-btn re" onclick="checkNote('Re')">RE</button>
-                <button class="note-btn mi" onclick="checkNote('Mi')">MI</button>
-                <button class="note-btn fa" onclick="checkNote('Fa')">FA</button>
-                <button class="note-btn sol" onclick="checkNote('Sol')">SOL</button>
-                <button class="note-btn la" onclick="checkNote('La')">LA</button>
-                <button class="note-btn si" onclick="checkNote('Si')">SI</button>
-            </div>
-        </div>
-    </div>
-    <script src="script.js"></script>
+  <title>Solfejio 1-Sinf — Ali bilan o‘yin</title>
+
+  <link rel="stylesheet" href="style.css">
+
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+
+<body>
+
+  <main class="game-container">
+
+    <header class="topbar">
+      <div>
+        <div class="brand">🎵 Solfejio 1-Sinf</div>
+        <div class="subtitle">Ali bilan notalarni o‘rganamiz</div>
+      </div>
+
+      <div class="score">
+        <span id="progressText">1 / 7</span>
+        <span id="scoreText">⭐ 0</span>
+      </div>
+    </header>
+
+
+    <!-- ALI VIDEO -->
+    <section class="video-box">
+
+      <video
+        id="aliVideo"
+        playsinline
+        preload="metadata"
+        controls>
+      </video>
+
+      <div id="videoMessage" class="video-message">
+        Ali siz bilan salomlashmoqda…
+      </div>
+
+    </section>
+
+
+    <!-- O‘YIN -->
+    <section class="game-card">
+
+      <div id="statusPill" class="status-pill">
+        Tayyorlanamiz 🎵
+      </div>
+
+      <h1 id="instructionText">
+        Notalarni o‘rganamiz!
+      </h1>
+
+      <p id="helperText">
+        Avval Ali bilan tanishib oling.
+      </p>
+
+
+      <!-- NOTALAR -->
+      <div
+        class="notes-grid"
+        id="notesGrid">
+
+        <button
+          class="note-btn"
+          data-note="DO"
+          type="button">
+          DO
+        </button>
+
+        <button
+          class="note-btn"
+          data-note="RE"
+          type="button">
+          RE
+        </button>
+
+        <button
+          class="note-btn"
+          data-note="MI"
+          type="button">
+          MI
+        </button>
+
+        <button
+          class="note-btn"
+          data-note="FA"
+          type="button">
+          FA
+        </button>
+
+        <button
+          class="note-btn"
+          data-note="SOL"
+          type="button">
+          SOL
+        </button>
+
+        <button
+          class="note-btn"
+          data-note="LA"
+          type="button">
+          LA
+        </button>
+
+        <button
+          class="note-btn"
+          data-note="SI"
+          type="button">
+          SI
+        </button>
+
+      </div>
+
+
+      <!-- FEEDBACK -->
+      <div
+        id="feedbackText"
+        class="feedback"
+        aria-live="polite">
+      </div>
+
+
+      <!-- START -->
+      <button
+        id="startBtn"
+        class="primary-btn"
+        type="button">
+        🎮 Boshlash
+      </button>
+
+
+      <!-- RESTART -->
+      <button
+        id="restartBtn"
+        class="secondary-btn hidden"
+        type="button">
+        🔄 Qayta o‘ynash
+      </button>
+
+    </section>
+
+
+    <!-- NATIJA -->
+    <section
+      id="resultCard"
+      class="result-card hidden">
+
+      <div class="result-icon">
+        🏆
+      </div>
+
+      <h2>
+        Barakalla!
+      </h2>
+
+      <p id="resultText"></p>
+
+      <button
+        id="resultRestartBtn"
+        class="primary-btn"
+        type="button">
+        Yana o‘ynaymiz
+      </button>
+
+    </section>
+
+  </main>
+
+
+  <!-- ASOSIY JAVASCRIPT -->
+  <script src="script.js"></script>
+
 </body>
-</html>
+</html> 
