@@ -2,7 +2,11 @@
 <html lang="uz">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
 
   <title>Solfejio 1-Sinf</title>
 
@@ -15,8 +19,9 @@
 
   <div class="game">
 
-    <!-- ЮҚОРИ ҚИСМ -->
+    <!-- YUQORI PANEL -->
     <header class="top">
+
       <div class="title">
         🎵 Solfejio 1-Sinf
       </div>
@@ -24,10 +29,11 @@
       <div class="score">
         ⭐ <span id="score">0</span>
       </div>
+
     </header>
 
 
-    <!-- АЛИ ВИДЕО -->
+    <!-- ALI VIDEOSI -->
     <div class="video-wrapper">
 
       <video
@@ -35,32 +41,27 @@
         playsinline
         preload="auto"
       >
-        <source src="Greeting.mp4" type="video/mp4">
+        <source
+          src="Greeting.mp4"
+          type="video/mp4"
+        >
       </video>
 
     </div>
 
 
-    <!-- БИТТА БОШЛАШ ТУГМАСИ -->
+    <!-- BITTA BOSHLASH TUGMASI -->
     <button
       id="startGameBtn"
       class="start-button"
       type="button"
+      onclick="startGame()"
     >
-      ▶ Бошлаш
+      ▶ Boshlash
     </button>
 
 
-    <!-- САВОЛ -->
-    <div
-      id="instructionText"
-      class="instruction"
-    >
-      🎧
-    </div>
-
-
-    <!-- НОТА ТУГМАЛАРИ -->
+    <!-- NOTALAR -->
     <div class="notes-grid">
 
       <button
@@ -122,7 +123,7 @@
     </div>
 
 
-    <!-- НАТИЖА -->
+    <!-- JAVOB -->
     <div
       id="feedbackText"
       class="feedback"
