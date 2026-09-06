@@ -1,11 +1,10 @@
-
 <!DOCTYPE html>
 <html lang="uz">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>Solfejio 1-Sinf — Ali bilan o‘yin</title>
+  <title>Solfejio 1-Sinf</title>
 
   <link rel="stylesheet" href="style.css">
 
@@ -14,168 +13,125 @@
 
 <body>
 
-  <main class="game-container">
+  <div class="game">
 
-    <header class="topbar">
-      <div>
-        <div class="brand">🎵 Solfejio 1-Sinf</div>
-        <div class="subtitle">Ali bilan notalarni o‘rganamiz</div>
+    <!-- ЮҚОРИ ҚИСМ -->
+    <header class="top">
+      <div class="title">
+        🎵 Solfejio 1-Sinf
       </div>
 
       <div class="score">
-        <span id="progressText">1 / 7</span>
-        <span id="scoreText">⭐ 0</span>
+        ⭐ <span id="score">0</span>
       </div>
     </header>
 
 
-    <!-- ALI VIDEO -->
-    <section class="video-box">
+    <!-- АЛИ ВИДЕО -->
+    <div class="video-wrapper">
 
       <video
         id="aliVideo"
         playsinline
-        preload="metadata"
-        controls>
+        preload="auto"
+      >
+        <source src="Greeting.mp4" type="video/mp4">
       </video>
 
-      <div id="videoMessage" class="video-message">
-        Ali siz bilan salomlashmoqda…
-      </div>
-
-    </section>
+    </div>
 
 
-    <!-- O‘YIN -->
-    <section class="game-card">
-
-      <div id="statusPill" class="status-pill">
-        Tayyorlanamiz 🎵
-      </div>
-
-      <h1 id="instructionText">
-        Notalarni o‘rganamiz!
-      </h1>
-
-      <p id="helperText">
-        Avval Ali bilan tanishib oling.
-      </p>
+    <!-- БИТТА БОШЛАШ ТУГМАСИ -->
+    <button
+      id="startGameBtn"
+      class="start-button"
+      type="button"
+    >
+      ▶ Бошлаш
+    </button>
 
 
-      <!-- NOTALAR -->
-      <div
-        class="notes-grid"
-        id="notesGrid">
-
-        <button
-          class="note-btn"
-          data-note="DO"
-          type="button">
-          DO
-        </button>
-
-        <button
-          class="note-btn"
-          data-note="RE"
-          type="button">
-          RE
-        </button>
-
-        <button
-          class="note-btn"
-          data-note="MI"
-          type="button">
-          MI
-        </button>
-
-        <button
-          class="note-btn"
-          data-note="FA"
-          type="button">
-          FA
-        </button>
-
-        <button
-          class="note-btn"
-          data-note="SOL"
-          type="button">
-          SOL
-        </button>
-
-        <button
-          class="note-btn"
-          data-note="LA"
-          type="button">
-          LA
-        </button>
-
-        <button
-          class="note-btn"
-          data-note="SI"
-          type="button">
-          SI
-        </button>
-
-      </div>
+    <!-- САВОЛ -->
+    <div
+      id="instructionText"
+      class="instruction"
+    >
+      🎧
+    </div>
 
 
-      <!-- FEEDBACK -->
-      <div
-        id="feedbackText"
-        class="feedback"
-        aria-live="polite">
-      </div>
-
-
-      <!-- START -->
-      <button
-        id="startBtn"
-        class="primary-btn"
-        type="button">
-        🎮 Boshlash
-      </button>
-
-
-      <!-- RESTART -->
-      <button
-        id="restartBtn"
-        class="secondary-btn hidden"
-        type="button">
-        🔄 Qayta o‘ynash
-      </button>
-
-    </section>
-
-
-    <!-- NATIJA -->
-    <section
-      id="resultCard"
-      class="result-card hidden">
-
-      <div class="result-icon">
-        🏆
-      </div>
-
-      <h2>
-        Barakalla!
-      </h2>
-
-      <p id="resultText"></p>
+    <!-- НОТА ТУГМАЛАРИ -->
+    <div class="notes-grid">
 
       <button
-        id="resultRestartBtn"
-        class="primary-btn"
-        type="button">
-        Yana o‘ynaymiz
+        class="note-btn"
+        data-note="DO"
+        type="button"
+      >
+        DO
       </button>
 
-    </section>
+      <button
+        class="note-btn"
+        data-note="RE"
+        type="button"
+      >
+        RE
+      </button>
 
-  </main>
+      <button
+        class="note-btn"
+        data-note="MI"
+        type="button"
+      >
+        MI
+      </button>
+
+      <button
+        class="note-btn"
+        data-note="FA"
+        type="button"
+      >
+        FA
+      </button>
+
+      <button
+        class="note-btn"
+        data-note="SOL"
+        type="button"
+      >
+        SOL
+      </button>
+
+      <button
+        class="note-btn"
+        data-note="LA"
+        type="button"
+      >
+        LA
+      </button>
+
+      <button
+        class="note-btn"
+        data-note="SI"
+        type="button"
+      >
+        SI
+      </button>
+
+    </div>
 
 
-  <!-- ASOSIY JAVASCRIPT -->
+    <!-- НАТИЖА -->
+    <div
+      id="feedbackText"
+      class="feedback"
+    ></div>
+
+  </div>
+
+
   <script src="script.js"></script>
 
 </body>
-</html> 
+</html>
