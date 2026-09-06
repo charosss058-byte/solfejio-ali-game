@@ -1,19 +1,17 @@
-
 "use strict";
 
-/* =========================================
+/* ================================
    SOLFEJIO 1-SINF
-   TOZA O'YIN KODI
-========================================= */
+================================ */
 
-const VIDEOS = {
+const VIDEO = {
     greeting: "Greeting.mp4",
     task: "Task_Prompt.mp4",
     praise: "Praise.mp4",
     encouragement: "Encouragement.mp4"
 };
 
-const NOTES = {
+const AUDIO = {
     DO: "C4.mp3",
     RE: "D4.mp3",
     MI: "E4.mp3",
@@ -24,580 +22,367 @@ const NOTES = {
 };
 
 
-/* =========================================
+/* ================================
    ELEMENTLAR
-========================================= */
+================================ */
 
 const video = document.getElementById("aliVideo");
 const startButton = document.getElementById("startGameBtn");
-const scoreElement = document.getElementById("score");
-const feedbackElement = document.getElementById("feedbackText");
-
-const noteButtons = Array.from(
-    document.querySelectorAll(".note-btn")
-);
+const scoreText = document.getElementById("score");
+const feedback = document.getElementById("feedbackText");
+const buttons = [...document.querySelectorAll(".note-btn")];
 
 
-/* =========================================
+/* ================================
    O'YIN HOLATI
-========================================= */
+================================ */
 
-let gameStarted = false;
-let buttonsLocked = true;
-
-let currentNote = null;
-let lastNote = null;
-
+let started = false;
+let locked = true;
+let currentNote = "";
+let lastNote = "";
 let score = 0;
 
 
-/* =========================================
-   AUDIO FAYLLAR
-========================================= */
+/* ================================
+   AUDIO
+================================ */
 
-const audioBank = {};
+const sounds = {};
 
-Object.keys(NOTES).forEach(function(note) {
-
-    const audio = new Audio(NOTES[note]);
-
-    audio.preload = "auto";
-
-    audioBank[note] = audio;
-
-});
+for (const note in AUDIO) {
+    sounds[note] = new Audio(AUDIO[note]);
+    sounds[note].preload = "auto";
+}
 
 
-/* =========================================
-   BALL
-========================================= */
+/* ================================
+   YORDAMCHI FUNKSIYALAR
+================================ */
+
+function message(text) {
+    if (feedback) {
+        feedback.textContent = text;
+    }
+}
+
 
 function updateScore() {
-
-    if (scoreElement) {
-        scoreElement.textContent = score;
+    if (scoreText) {
+        scoreText.textContent = score;
     }
-
 }
 
 
-/* =========================================
-   MATN
-========================================= */
+function lock() {
+    locked = true;
 
-function showMessage(text) {
-
-    if (feedbackElement) {
-        feedbackElement.textContent = text;
-    }
-
-}
-
-
-/* =========================================
-   TUGMALARNI BLOKIROVKA
-========================================= */
-
-function lockButtons() {
-
-    buttonsLocked = true;
-
-    noteButtons.forEach(function(button) {
-
+    buttons.forEach(button => {
         button.disabled = true;
-
-        button.classList.remove("correct");
-        button.classList.remove("wrong");
-
+        button.classList.remove("correct", "wrong");
     });
-
 }
 
 
-function unlockButtons() {
+function unlock() {
+    locked = false;
 
-    buttonsLocked = false;
-
-    noteButtons.forEach(function(button) {
-
+    buttons.forEach(button => {
         button.disabled = false;
-
     });
-
 }
 
 
-/* =========================================
-   TASODIFIY NOTA
-========================================= */
+/* ================================
+   NOTA TANLASH
+================================ */
 
-function chooseNote() {
+function newQuestion() {
+    const notes = Object.keys(AUDIO);
 
-    const notes = Object.keys(NOTES);
-
-    let newNote;
+    let note;
 
     do {
+        note = notes[Math.floor(Math.random() * notes.length)];
+    } while (notes.length > 1 && note === lastNote);
 
-        newNote =
-            notes[Math.floor(Math.random() * notes.length)];
-
-    } while (
-        notes.length > 1 &&
-        newNote === lastNote
-    );
-
-    lastNote = newNote;
-
-    currentNote = newNote;
-
+    currentNote = note;
+    lastNote = note;
 }
 
 
-/* =========================================
-   NOTA OVOZINI IJRO ETISH
-========================================= */
+/* ================================
+   NOTA OVOZI
+================================ */
 
 function playNote(note) {
+    return new Promise(resolve => {
 
-    return new Promise(function(resolve) {
-
-        const audio = audioBank[note];
+        const audio = sounds[note];
 
         if (!audio) {
-
             resolve();
-
             return;
         }
 
-
         audio.pause();
-
         audio.currentTime = 0;
 
-
-        let finished = false;
-
-
-        function finish() {
-
-            if (finished) {
-                return;
-            }
-
-            finished = true;
-
-            audio.removeEventListener(
-                "ended",
-                finish
-            );
-
-            audio.removeEventListener(
-                "error",
-                finish
-            );
-
+        const done = () => {
+            audio.removeEventListener("ended", done);
+            audio.removeEventListener("error", done);
             resolve();
+        };
 
+        audio.addEventListener("ended", done);
+        audio.addEventListener("error", done);
+
+        const play = audio.play();
+
+        if (play) {
+            play.catch(done);
         }
-
-
-        audio.addEventListener(
-            "ended",
-            finish
-        );
-
-        audio.addEventListener(
-            "error",
-            finish
-        );
-
-
-        const promise = audio.play();
-
-
-        if (promise) {
-
-            promise.catch(function() {
-
-                finish();
-
-            });
-
-        }
-
     });
-
 }
 
 
-/* =========================================
-   VIDEO IJRO ETISH
-========================================= */
+/* ================================
+   ALI VIDEOSI
+================================ */
 
-function playVideo(file, callback) {
+function playAli(file, next) {
 
     if (!video) {
-
-        if (callback) {
-            callback();
-        }
-
+        if (next) next();
         return;
     }
 
-
     video.pause();
 
-    video.onended = null;
-
-    video.onerror = null;
-
-
     video.src = file;
-
     video.load();
 
+    video.onended = null;
+    video.onerror = null;
 
     let finished = false;
 
+    function done() {
 
-    function finish() {
-
-        if (finished) {
-            return;
-        }
+        if (finished) return;
 
         finished = true;
 
         video.onended = null;
-
         video.onerror = null;
 
-
-        if (callback) {
-            callback();
+        if (next) {
+            next();
         }
-
     }
 
+    video.onended = done;
+    video.onerror = done;
 
-    video.onended = finish;
+    const play = video.play();
 
-    video.onerror = finish;
-
-
-    const promise = video.play();
-
-
-    if (promise) {
-
-        promise.catch(function() {
-
+    if (play) {
+        play.catch(() => {
             /*
-              Brauzer avtomatik video ijrosini
-              bloklasa ham o'yin to'xtab qolmaydi.
+              Video brauzer tomonidan bloklansa,
+              o'yin to'xtab qolmaydi.
             */
-
-            finish();
-
+            done();
         });
-
     }
-
 }
 
 
-/* =========================================
+/* ================================
    O'YINNI BOSHLASH
-========================================= */
+================================ */
 
 function startGame() {
 
-    if (gameStarted) {
-        return;
-    }
+    if (started) return;
 
-
-    gameStarted = true;
-
+    started = true;
     score = 0;
-
-    currentNote = null;
-
-    lastNote = null;
-
+    currentNote = "";
+    lastNote = "";
 
     updateScore();
-
-    showMessage("");
-
-    lockButtons();
-
+    message("");
+    lock();
 
     if (startButton) {
-
         startButton.style.display = "none";
-
     }
 
-
     /*
-      1. Greeting
+      Greeting
     */
+    playAli(VIDEO.greeting, () => {
 
-    playVideo(
-        VIDEOS.greeting,
-        function() {
+        /*
+          Task
+        */
+        startQuestion();
 
-            /*
-              2. Task
-            */
-
-            startQuestion();
-
-        }
-    );
-
+    });
 }
 
 
-/* =========================================
-   YANGI SAVOL
-========================================= */
+/* ================================
+   SAVOL
+================================ */
 
 function startQuestion() {
 
-    if (!gameStarted) {
-        return;
-    }
+    if (!started) return;
 
+    lock();
+    message("");
 
-    lockButtons();
-
-    showMessage("");
-
-
-    chooseNote();
-
+    newQuestion();
 
     /*
-      Task videosi
+      Task_Prompt
     */
+    playAli(VIDEO.task, async () => {
 
-    playVideo(
-        VIDEOS.task,
-        async function() {
+        /*
+          Task tugagach,
+          nota eshittiriladi
+        */
+        await playNote(currentNote);
 
-            /*
-              Task tugagach nota ovozi
-            */
+        if (!started) return;
 
-            await playNote(currentNote);
-
-
-            if (!gameStarted) {
-                return;
-            }
-
-
-            /*
-              Bola javob tanlaydi
-            */
-
-            unlockButtons();
-
-        }
-    );
-
+        /*
+          Javob berish mumkin
+        */
+        unlock();
+    });
 }
 
 
-/* =========================================
+/* ================================
    TO'G'RI JAVOB
-========================================= */
+================================ */
 
-async function correctAnswer(button) {
+async function rightAnswer(button) {
 
     button.classList.add("correct");
 
-
     score++;
-
     updateScore();
 
-
-    showMessage(
-        "Barakalla! To'g'ri topdingiz!"
-    );
-
+    message("Barakalla! To'g'ri topdingiz!");
 
     /*
-      Praise videosi
+      Praise
     */
+    playAli(VIDEO.praise, () => {
 
-    playVideo(
-        VIDEOS.praise,
-        function() {
+        /*
+          Keyingi savol
+        */
+        startQuestion();
 
-            /*
-              Keyingi savol
-            */
-
-            startQuestion();
-
-        }
-    );
-
+    });
 }
 
 
-/* =========================================
+/* ================================
    NOTO'G'RI JAVOB
-========================================= */
+================================ */
 
-function wrongAnswer() {
+async function wrongAnswer(button) {
 
-    showMessage(
-        "Yana urinib ko'ring!"
-    );
+    button.classList.add("wrong");
 
+    message("Yana urinib ko'ring!");
 
     /*
-      Encouragement videosi
+      Encouragement
     */
+    playAli(VIDEO.encouragement, async () => {
 
-    playVideo(
-        VIDEOS.encouragement,
-        async function() {
+        /*
+          Xuddi shu savolni
+          qaytadan eshittiramiz
+        */
+        await playNote(currentNote);
 
-            /*
-              Shu savol yana bir marta
-              ovoz chiqarib beriladi.
-            */
+        if (!started) return;
 
-            showMessage("");
+        unlock();
 
-
-            await playNote(currentNote);
-
-
-            if (!gameStarted) {
-                return;
-            }
-
-
-            /*
-              Yana javob berish mumkin
-            */
-
-            unlockButtons();
-
-        }
-    );
-
+    });
 }
 
 
-/* =========================================
+/* ================================
    NOTA TUGMALARI
-========================================= */
+================================ */
 
-noteButtons.forEach(function(button) {
+buttons.forEach(button => {
 
-    button.addEventListener(
-        "click",
-        async function() {
+    button.addEventListener("click", async () => {
 
-            if (!gameStarted) {
-                return;
-            }
+        if (!started) return;
+        if (locked) return;
+        if (!currentNote) return;
 
+        const selected =
+            button.getAttribute("data-note");
 
-            if (buttonsLocked) {
-                return;
-            }
+        if (!selected) return;
 
+        lock();
 
-            if (!currentNote) {
-                return;
-            }
+        /*
+          Bola bosgan nota ovozi
+        */
+        await playNote(selected);
 
+        /*
+          Javobni tekshirish
+        */
+        if (selected === currentNote) {
 
-            const selectedNote =
-                button.getAttribute("data-note");
+            await rightAnswer(button);
 
+        } else {
 
-            if (!selectedNote) {
-                return;
-            }
-
-
-            /*
-              Javob vaqtida boshqa tugmalar
-              bosilmaydi.
-            */
-
-            lockButtons();
-
-
-            /*
-              Bola tanlagan notani eshittiramiz.
-            */
-
-            await playNote(selectedNote);
-
-
-            /*
-              To'g'ri yoki noto'g'ri
-            */
-
-            if (selectedNote === currentNote) {
-
-                await correctAnswer(button);
-
-            } else {
-
-                button.classList.add("wrong");
-
-                wrongAnswer();
-
-            }
+            await wrongAnswer(button);
 
         }
-    );
+
+    });
 
 });
 
 
-/* =========================================
+/* ================================
    BOSHLANG'ICH HOLAT
-========================================= */
+================================ */
 
-lockButtons();
-
+lock();
 
 if (video) {
-
-    video.pause();
-
     video.controls = false;
-
     video.preload = "auto";
-
 }
-
 
 if (startButton) {
-
     startButton.style.display = "block";
-
 }
 
 
-/* =========================================
-   GLOBAL START
-========================================= */
+/* ================================
+   START BUTTON
+================================ */
 
 window.startGame = startGame;
