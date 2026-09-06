@@ -14,165 +14,41 @@
     <link rel="stylesheet" href="style.css">
 
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-</head>
 
-<body>
+    <style>
+        #accessGate {
+            position: fixed;
+            inset: 0;
+            z-index: 100000;
+            background: rgba(20, 20, 30, 0.92);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
 
-    <main class="game">
+        #accessGate .gate-box {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 28px 24px;
+            max-width: 360px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
 
-        <!-- TOP -->
-        <header class="top">
-            <div class="title">🎵 Solfejio 1-Sinf</div>
+        #accessGate h2 {
+            margin: 0 0 12px 0;
+            font-size: 20px;
+        }
 
-            <div class="score">
-                ⭐ <span id="score">0</span>
-            </div>
-        </header>
+        #accessGate p {
+            margin: 0 0 16px 0;
+            font-size: 14px;
+            color: #444;
+        }
 
-
-        <!-- ALI VIDEO -->
-        <section class="video-wrapper">
-
-            <video
-                id="aliVideo"
-                playsinline
-                preload="auto"
-            >
-                <source src="Greeting.mp4" type="video/mp4">
-            </video>
-
-        </section>
-
-
-        <!-- ONE START BUTTON -->
-        <button
-            id="startGameBtn"
-            class="start-button"
-            type="button"
-            onclick="startGame()"
-        >
-            ▶ Бошлаш
-        </button>
-
-
-        <!-- NOTE BUTTONS -->
-        <section
-            class="notes-grid"
-            aria-label="Ноталар"
-        >
-
-            <!-- DO -->
-            <button
-                class="note-btn note-do"
-                data-note="DO"
-                type="button"
-                aria-label="До нотаси"
-            >
-                <span class="staff">
-                    <span class="note-head"></span>
-                    <span class="note-stem"></span>
-                </span>
-            </button>
-
-
-            <!-- RE -->
-            <button
-                class="note-btn note-re"
-                data-note="RE"
-                type="button"
-                aria-label="Ре нотаси"
-            >
-                <span class="staff">
-                    <span class="note-head"></span>
-                    <span class="note-stem"></span>
-                </span>
-            </button>
-
-
-            <!-- MI -->
-            <button
-                class="note-btn note-mi"
-                data-note="MI"
-                type="button"
-                aria-label="Ми нотаси"
-            >
-                <span class="staff">
-                    <span class="note-head"></span>
-                    <span class="note-stem"></span>
-                </span>
-            </button>
-
-
-            <!-- FA -->
-            <button
-                class="note-btn note-fa"
-                data-note="FA"
-                type="button"
-                aria-label="Фа нотаси"
-            >
-                <span class="staff">
-                    <span class="note-head"></span>
-                    <span class="note-stem"></span>
-                </span>
-            </button>
-
-
-            <!-- SOL -->
-            <button
-                class="note-btn note-sol"
-                data-note="SOL"
-                type="button"
-                aria-label="Соль нотаси"
-            >
-                <span class="staff">
-                    <span class="note-head"></span>
-                    <span class="note-stem"></span>
-                </span>
-            </button>
-
-
-            <!-- LA -->
-            <button
-                class="note-btn note-la"
-                data-note="LA"
-                type="button"
-                aria-label="Ля нотаси"
-            >
-                <span class="staff">
-                    <span class="note-head"></span>
-                    <span class="note-stem"></span>
-                </span>
-            </button>
-
-
-            <!-- SI -->
-            <button
-                class="note-btn note-si"
-                data-note="SI"
-                type="button"
-                aria-label="Си нотаси"
-            >
-                <span class="staff">
-                    <span class="note-head"></span>
-                    <span class="note-stem"></span>
-                </span>
-            </button>
-
-        </section>
-
-
-        <!-- FEEDBACK -->
-        <div
-            id="feedbackText"
-            class="feedback"
-            aria-live="polite"
-        ></div>
-
-    </main>
-
-
-    <!-- GAME ENGINE -->
-    <script src="script.js"></script>
-
-</body>
-</html>
+        #accessGate input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 12px 14px;
