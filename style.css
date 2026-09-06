@@ -1,355 +1,555 @@
+/* =========================================================
+   SOLFEJIO 1-SINF
+   PROFESSIONAL RESPONSIVE DESIGN
+   ========================================================= */
+
 * {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
 html,
 body {
-  width: 100%;
-  min-height: 100%;
+    width: 100%;
+    min-height: 100%;
 }
 
 body {
-  font-family: Arial, sans-serif;
-  background: linear-gradient(135deg, #e8f7ee, #e8f5ff);
-  color: #17324d;
-  overflow-x: hidden;
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #e8f7ee, #e8f5ff);
+    color: #17324d;
+    overflow-x: hidden;
 }
 
 
-/* =================================
-   ASOSIY O'YIN
-   ================================= */
+/* =========================================================
+   GAME CONTAINER
+   ========================================================= */
 
 .game {
-  width: min(920px, 96vw);
-  min-height: 100vh;
-  margin: 0 auto;
-  padding: 10px 0 15px;
+    width: min(1000px, 96vw);
+    min-height: 100vh;
+    margin: 0 auto;
+    padding: 8px 0 12px;
 
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 
-/* =================================
-   YUQORI PANEL
-   ================================= */
+/* =========================================================
+   TOP BAR
+   ========================================================= */
 
 .top {
-  width: 100%;
-  height: 55px;
+    width: 100%;
+    height: 48px;
 
-  background: #ffffff;
-  border-radius: 18px;
+    padding: 0 18px;
 
-  padding: 0 20px;
+    background: #ffffff;
+    border-radius: 16px;
 
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
 
-  margin-bottom: 8px;
+    margin-bottom: 7px;
 }
 
 .title {
-  font-size: 24px;
-  font-weight: 800;
+    font-size: 22px;
+    font-weight: 800;
 }
 
 .score {
-  font-size: 20px;
-  font-weight: 800;
+    font-size: 19px;
+    font-weight: 800;
 }
 
 
-/* =================================
-   ALI VIDEOSI
-   ================================= */
+/* =========================================================
+   VIDEO
+   ========================================================= */
 
 .video-wrapper {
-  width: 100%;
-  height: 350px;
+    width: 100%;
+    height: 300px;
 
-  background: #111111;
+    background: #111111;
 
-  border-radius: 22px;
+    border-radius: 20px;
 
-  overflow: hidden;
+    overflow: hidden;
 
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.14);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.14);
 }
 
 #aliVideo {
-  width: 100%;
-  height: 100%;
+    width: 100%;
+    height: 100%;
 
-  display: block;
+    display: block;
 
-  object-fit: contain;
+    object-fit: contain;
 
-  background: #111111;
+    background: #111111;
 }
 
 
-/* =================================
-   BOSHLASH TUGMASI
-   ================================= */
+/* =========================================================
+   START BUTTON
+   ========================================================= */
 
 .start-button {
-  width: 230px;
-  height: 46px;
+    width: 220px;
+    height: 44px;
 
-  margin-top: 8px;
+    margin-top: 7px;
 
-  border: none;
-  border-radius: 14px;
+    border: none;
+    border-radius: 13px;
 
-  background: #4caf50;
+    background: #4caf50;
+    color: #ffffff;
 
-  color: #ffffff;
+    font-size: 18px;
+    font-weight: 800;
 
-  font-size: 19px;
-  font-weight: 800;
+    cursor: pointer;
 
-  cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.14);
 
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-
-  transition:
-    transform 0.15s,
-    background 0.15s;
+    transition:
+        transform 0.15s ease,
+        background 0.15s ease;
 }
 
 .start-button:hover {
-  background: #43a047;
-  transform: translateY(-2px);
+    background: #43a047;
+    transform: translateY(-2px);
 }
 
 .start-button:active {
-  transform: scale(0.97);
-}
-
-.start-button.hidden {
-  display: none;
+    transform: scale(0.97);
 }
 
 
-/* =================================
-   NOTALAR
-   ================================= */
+/* =========================================================
+   NOTES AREA
+   ========================================================= */
 
 .notes-grid {
-  width: 100%;
-
-  margin-top: 10px;
-
-  display: grid;
-
-  grid-template-columns: repeat(4, 1fr);
-
-  gap: 9px;
-}
-
-
-/* =================================
-   NOTA TUGMALARI
-   ================================= */
-
-.note-btn {
-  height: 55px;
-
-  border: none;
-  border-radius: 15px;
-
-  background: #7bc982;
-
-  color: #ffffff;
-
-  font-size: 21px;
-  font-weight: 900;
-
-  cursor: pointer;
-
-  box-shadow:
-    0 4px 9px rgba(0, 0, 0, 0.10);
-
-  transition:
-    transform 0.12s,
-    background 0.12s,
-    opacity 0.12s;
-}
-
-
-/* Oddiy holat */
-.note-btn:not(:disabled) {
-  opacity: 1;
-}
-
-
-/* Sichqoncha ustiga kelganda */
-.note-btn:hover:not(:disabled) {
-  background: #5fbb69;
-
-  transform: translateY(-2px);
-}
-
-
-/* Bosilganda */
-.note-btn:active:not(:disabled) {
-  transform: scale(0.96);
-}
-
-
-/* Bloklangan paytda ham juda xira bo'lmaydi */
-.note-btn:disabled {
-  background: #a8dcae;
-
-  color: #ffffff;
-
-  opacity: 0.85;
-
-  cursor: not-allowed;
-}
-
-
-/* =================================
-   SI — LA YONIDA
-   ================================= */
-
-/*
-   DO  RE  MI  FA
-   SOL LA  SI
-*/
-
-.note-btn:last-child {
-  grid-column: auto;
-}
-
-
-/* =================================
-   FEEDBACK
-   ================================= */
-
-.feedback {
-  min-height: 20px;
-
-  margin-top: 5px;
-
-  font-size: 17px;
-
-  font-weight: 700;
-
-  text-align: center;
-}
-
-
-/* =================================
-   KOMPYUTER EKRANI
-   ================================= */
-
-@media (min-width: 701px) {
-
-  .game {
-    max-width: 920px;
-  }
-
-  .video-wrapper {
-    height: 340px;
-  }
-
-  .notes-grid {
-    grid-template-columns: repeat(4, 1fr);
-  }
-
-}
-
-
-/* =================================
-   TELEFON
-   ================================= */
-
-@media (max-width: 700px) {
-
-  .game {
-    width: 96vw;
-
-    padding-top: 7px;
-  }
-
-  .top {
-    height: 48px;
-
-    padding: 0 14px;
-
-    border-radius: 15px;
-  }
-
-  .title {
-    font-size: 19px;
-  }
-
-  .score {
-    font-size: 17px;
-  }
-
-  .video-wrapper {
-    height: 280px;
-
-    border-radius: 18px;
-  }
-
-  .start-button {
-    width: 205px;
-
-    height: 43px;
-
-    font-size: 17px;
-  }
-
-  .notes-grid {
-    grid-template-columns: repeat(2, 1fr);
-
-    gap: 7px;
+    width: 100%;
 
     margin-top: 8px;
-  }
 
-  .note-btn {
-    height: 48px;
+    display: grid;
 
-    font-size: 18px;
-  }
+    /*
+       Desktop:
+       DO RE MI FA SOL LA SI
+       all in ONE row.
+    */
 
-  .feedback {
-    font-size: 15px;
-  }
+    grid-template-columns: repeat(7, 1fr);
+
+    gap: 7px;
+}
+
+
+/* =========================================================
+   NOTE BUTTON
+   ========================================================= */
+
+.note-btn {
+    position: relative;
+
+    width: 100%;
+    height: 72px;
+
+    border: none;
+    border-radius: 15px;
+
+    background: #ffffff;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 4px 10px rgba(0, 0, 0, 0.10),
+        inset 0 0 0 2px rgba(76, 175, 80, 0.20);
+
+    overflow: hidden;
+
+    transition:
+        transform 0.12s ease,
+        box-shadow 0.12s ease,
+        background 0.12s ease;
+}
+
+
+/* =========================================================
+   STAFF — 5 MUSICAL LINES
+   ========================================================= */
+
+.staff {
+    position: absolute;
+
+    left: 8%;
+    right: 8%;
+
+    top: 50%;
+
+    height: 42px;
+
+    transform: translateY(-50%);
+
+    /*
+       Five horizontal musical staff lines.
+    */
+
+    background:
+        linear-gradient(
+            to bottom,
+            transparent 0,
+            transparent 4px,
+            #47708c 4px,
+            #47708c 5px,
+
+            transparent 5px,
+            transparent 13px,
+            #47708c 13px,
+            #47708c 14px,
+
+            transparent 14px,
+            transparent 22px,
+            #47708c 22px,
+            #47708c 23px,
+
+            transparent 23px,
+            transparent 31px,
+            #47708c 31px,
+            #47708c 32px,
+
+            transparent 32px,
+            transparent 40px,
+            #47708c 40px,
+            #47708c 41px
+        );
+}
+
+
+/* =========================================================
+   NOTE HEAD
+   ========================================================= */
+
+.note-head {
+    position: absolute;
+
+    width: 19px;
+    height: 13px;
+
+    background: #17324d;
+
+    border-radius: 50%;
+
+    transform: rotate(-18deg);
+
+    left: 50%;
+}
+
+
+/* =========================================================
+   NOTE STEM
+   ========================================================= */
+
+.note-stem {
+    position: absolute;
+
+    width: 3px;
+    height: 28px;
+
+    background: #17324d;
+
+    left: calc(50% + 7px);
+}
+
+
+/* =========================================================
+   REAL NOTE POSITIONS
+   DO → RE → MI → FA → SOL → LA → SI
+   ========================================================= */
+
+.note-do .note-head {
+    top: 31px;
+}
+
+.note-do .note-stem {
+    top: 4px;
+}
+
+
+.note-re .note-head {
+    top: 27px;
+}
+
+.note-re .note-stem {
+    top: 0;
+}
+
+
+.note-mi .note-head {
+    top: 23px;
+}
+
+.note-mi .note-stem {
+    top: -4px;
+}
+
+
+.note-fa .note-head {
+    top: 19px;
+}
+
+.note-fa .note-stem {
+    top: -8px;
+}
+
+
+.note-sol .note-head {
+    top: 15px;
+}
+
+.note-sol .note-stem {
+    top: -12px;
+}
+
+
+.note-la .note-head {
+    top: 11px;
+}
+
+.note-la .note-stem {
+    top: -16px;
+}
+
+
+.note-si .note-head {
+    top: 7px;
+}
+
+.note-si .note-stem {
+    top: -20px;
+}
+
+
+/* =========================================================
+   NOTE BUTTON STATES
+   ========================================================= */
+
+/*
+   Disabled does NOT mean invisible.
+   Before the game starts the notes remain clearly visible.
+*/
+
+.note-btn:disabled {
+    opacity: 1;
+    cursor: not-allowed;
+
+    background: #ffffff;
+}
+
+
+/*
+   Active buttons
+*/
+
+.note-btn:not(:disabled):hover {
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 7px 14px rgba(0, 0, 0, 0.14),
+        inset 0 0 0 2px rgba(76, 175, 80, 0.45);
+}
+
+.note-btn:not(:disabled):active {
+    transform: scale(0.96);
+}
+
+
+/* =========================================================
+   CORRECT / WRONG
+   ========================================================= */
+
+.note-btn.correct {
+    background: #d9f5dc;
+    box-shadow:
+        0 0 0 3px rgba(76, 175, 80, 0.45),
+        0 5px 15px rgba(76, 175, 80, 0.25);
+}
+
+.note-btn.wrong {
+    background: #ffe0e0;
+    box-shadow:
+        0 0 0 3px rgba(220, 80, 80, 0.35),
+        0 5px 15px rgba(220, 80, 80, 0.18);
+}
+
+
+/* =========================================================
+   FEEDBACK
+   ========================================================= */
+
+.feedback {
+    min-height: 20px;
+
+    margin-top: 4px;
+
+    font-size: 16px;
+    font-weight: 800;
+
+    text-align: center;
+}
+
+
+/* =========================================================
+   TABLET
+   ========================================================= */
+
+@media (max-width: 800px) {
+
+    .game {
+        width: 96vw;
+        padding-top: 7px;
+    }
+
+    .top {
+        height: 45px;
+        padding: 0 14px;
+    }
+
+    .title {
+        font-size: 19px;
+    }
+
+    .score {
+        font-size: 17px;
+    }
+
+    .video-wrapper {
+        height: 270px;
+        border-radius: 18px;
+    }
+
+    .start-button {
+        width: 205px;
+        height: 42px;
+        font-size: 17px;
+    }
+
+    .notes-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 7px;
+    }
+
+    .note-btn {
+        height: 66px;
+    }
 
 }
 
 
-/* =================================
-   JUDA KICHIK TELEFON
-   ================================= */
+/* =========================================================
+   PHONE
+   ========================================================= */
 
-@media (max-width: 400px) {
+@media (max-width: 520px) {
 
-  .video-wrapper {
-    height: 235px;
-  }
+    .game {
+        width: 95vw;
+    }
 
-  .note-btn {
-    height: 44px;
+    .top {
+        height: 42px;
+        border-radius: 13px;
+    }
 
-    font-size: 17px;
-  }
+    .title {
+        font-size: 17px;
+    }
+
+    .score {
+        font-size: 16px;
+    }
+
+    .video-wrapper {
+        height: 235px;
+        border-radius: 16px;
+    }
+
+    .start-button {
+        width: 190px;
+        height: 40px;
+
+        margin-top: 6px;
+
+        font-size: 16px;
+    }
+
+    .notes-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 6px;
+
+        margin-top: 7px;
+    }
+
+    .note-btn {
+        height: 58px;
+        border-radius: 12px;
+    }
+
+    .staff {
+        left: 7%;
+        right: 7%;
+
+        transform: translateY(-50%) scale(0.88);
+    }
+
+    .feedback {
+        font-size: 14px;
+    }
+
+}
+
+
+/* =========================================================
+   VERY SMALL PHONES
+   ========================================================= */
+
+@media (max-width: 380px) {
+
+    .video-wrapper {
+        height: 210px;
+    }
+
+    .note-btn {
+        height: 53px;
+    }
+
+    .staff {
+        transform: translateY(-50%) scale(0.78);
+    }
+
+    .start-button {
+        width: 180px;
+    }
 
 }
