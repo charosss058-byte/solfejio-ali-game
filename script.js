@@ -1,13 +1,9 @@
 (() => {
   "use strict";
 
-  // =====================================================
-  // SOLFEGIO 1-SINF — ALI BILAN NOTALARNI O'RGANAMIZ
-  // =====================================================
-
-  // -----------------------------
+  // ================================
   // VIDEOLAR
-  // -----------------------------
+  // ================================
   const VIDEOS = {
     greeting: "Greeting.mp4",
     task: "Task_Prompt.mp4",
@@ -15,9 +11,9 @@
     encouragement: "Encouragement.mp4"
   };
 
-  // -----------------------------
-  // NOTALAR VA MP3 OVOZLARI
-  // -----------------------------
+  // ================================
+  // NOTA MP3 LARI
+  // ================================
   const NOTE_AUDIO = {
     DO: "C4.mp3",
     RE: "D4.mp3",
@@ -30,543 +26,395 @@
 
   const NOTES = Object.keys(NOTE_AUDIO);
 
-  // -----------------------------
-  // O'YIN HOLATI
-  // -----------------------------
-  let currentTargetNote = null;
-  let score = 0;
-  let questionNumber = 0;
-  let gameStarted = false;
-  let buttonsLocked = true;
-  let videoBusy = false;
-
-  // -----------------------------
+  // ================================
   // HTML ELEMENTLAR
-  // -----------------------------
-  const videoPlayer =
-    document.getElementById("aliVideo") ||
-    document.querySelector("video");
+  // ================================
+  const video = document.getElementById("aliVideo");
 
   const instruction =
-    document.getElementById("instructionText") ||
-    document.querySelector(".instruction-text");
+    document.getElementById("instructionText");
 
-  const feedback =
-    document.getElementById("feedbackText") ||
-    document.querySelector(".feedback-text");
+  const noteButtons =
+    Array.from(document.querySelectorAll(".note-btn"));
 
-  const scoreElement =
-    document.getElementById("score") ||
-    document.querySelector(".score");
+  // ================================
+  // O'YIN HOLATI
+  // ================================
+  let gameStarted = false;
+  let currentNote = "";
+  let score = 0;
+  let question = 0;
+  let locked = true;
 
-  const progressElement =
-    document.getElementById("progressText") ||
-    document.querySelector(".progress-text");
+  // ================================
+  // AUDIO
+  // ================================
+  const audios = {};
 
-  const noteButtons = Array.from(
-    document.querySelectorAll(".note-btn")
-  );
+  NOTES.forEach(note => {
+    audios[note] = new Audio(NOTE_AUDIO[note]);
+    audios[note].preload = "auto";
+    audios[note].volume = 1;
+  });
 
-  // =====================================================
-  // TELEGRAM WEB APP
-  // =====================================================
-
+  // ================================
+  // TELEGRAM
+  // ================================
   try {
     if (window.Telegram && window.Telegram.WebApp) {
       window.Telegram.WebApp.ready();
       window.Telegram.WebApp.expand();
     }
-  } catch (error) {
-    console.log("Telegram WebApp:", error);
+  } catch (e) {
+    console.log(e);
   }
 
-  // =====================================================
-  // AUDIO CACHE
-  // =====================================================
-
-  const noteAudio = {};
-
-  NOTES.forEach((note) => {
-    const audio = new Audio(NOTE_AUDIO[note]);
-    audio.preload = "auto";
-    audio.volume = 1;
-    noteAudio[note] = audio;
-  });
-
-  // =====================================================
-  // YORDAMCHI FUNKSIYALAR
-  // =====================================================
-
-  function normalizeNote(note) {
-    if (!note) return "";
-
-    const value = String(note)
+  // ================================
+  // YORDAMCHI FUNKSIYA
+  // ================================
+  function normalize(note) {
+    return String(note || "")
       .trim()
       .toUpperCase();
-
-    const aliases = {
-      DO: "DO",
-      RE: "RE",
-      MI: "MI",
-      FA: "FA",
-      SOL: "SOL",
-      SO: "SOL",
-      LA: "LA",
-      SI: "SI",
-      TI: "SI"
-    };
-
-    return aliases[value] || value;
   }
 
-  function setInstruction(text) {
+  function message(text) {
     if (instruction) {
       instruction.textContent = text;
     }
   }
 
-  function setFeedback(text) {
-    if (feedback) {
-      feedback.textContent = text;
-    }
+  function randomNote() {
+    return NOTES[Math.floor(Math.random() * NOTES.length)];
   }
 
-  function updateScore() {
-    if (scoreElement) {
-      scoreElement.textContent = `⭐ ${score}`;
-    }
-
-    if (progressElement) {
-      progressElement.textContent =
-        `Savol: ${questionNumber}`;
-    }
-  }
-
-  function getRandomNote() {
-    const index = Math.floor(Math.random() * NOTES.length);
-    return NOTES[index];
-  }
-
-  // =====================================================
-  // NOTA OVOZINI O'YNATISH
-  // =====================================================
-
-  function stopAllNotes() {
-    NOTES.forEach((note) => {
-      const audio = noteAudio[note];
-
-      if (!audio) return;
-
+  // ================================
+  // BARCHA NOTA OVOZLARINI TO'XTATISH
+  // ================================
+  function stopAllAudio() {
+    NOTES.forEach(note => {
       try {
-        audio.pause();
-        audio.currentTime = 0;
-      } catch (error) {
-        console.log(error);
-      }
+        audios[note].pause();
+        audios[note].currentTime = 0;
+      } catch (e) {}
     });
   }
 
+  // ================================
+  // NOTA OVOZINI O'YNATISH
+  // ================================
   async function playNote(note) {
-    const normalized = normalizeNote(note);
-    const audio = noteAudio[normalized];
+    note = normalize(note);
 
-    if (!audio) {
-      console.warn("Nota topilmadi:", note);
+    if (!audios[note]) {
+      console.log("Nota topilmadi:", note);
       return;
     }
 
-    stopAllNotes();
+    stopAllAudio();
 
     try {
-      audio.currentTime = 0;
-      await audio.play();
-    } catch (error) {
-      console.log("Nota ovozini ijro etib bo'lmadi:", error);
+      audios[note].currentTime = 0;
+      await audios[note].play();
+    } catch (e) {
+      console.log("Nota ovozi:", e);
     }
   }
 
-  // Global qilish — HTML ichidagi onclick uchun
   window.playNote = playNote;
 
-  // =====================================================
+  // ================================
   // VIDEO O'YNATISH
-  // =====================================================
+  // ================================
+  function playVideo(file, finished) {
 
-  function setVideo(fileName, onEnded) {
-    if (!videoPlayer) {
-      console.warn("Video elementi topilmadi.");
-      if (typeof onEnded === "function") {
-        onEnded();
+    if (!video) {
+      console.log("aliVideo topilmadi");
+
+      if (finished) {
+        finished();
       }
+
       return;
     }
 
-    videoBusy = true;
+    video.pause();
 
-    videoPlayer.pause();
+    video.onended = null;
+    video.onerror = null;
 
-    videoPlayer.onended = null;
-    videoPlayer.onerror = null;
+    video.loop = false;
+    video.controls = false;
 
-    videoPlayer.loop = false;
-    videoPlayer.controls = false;
+    video.src = file;
+    video.load();
 
-    // Eski videoni to'liq tozalash
-    videoPlayer.removeAttribute("src");
+    video.onended = () => {
 
-    // Yangi video
-    videoPlayer.src = fileName;
-    videoPlayer.load();
+      video.onended = null;
 
-    videoPlayer.onended = () => {
-      videoBusy = false;
-
-      if (typeof onEnded === "function") {
-        onEnded();
+      if (finished) {
+        finished();
       }
     };
 
-    videoPlayer.onerror = () => {
-      console.warn("Video yuklanmadi:", fileName);
+    video.onerror = () => {
 
-      videoBusy = false;
+      console.log("Video yuklanmadi:", file);
 
-      if (typeof onEnded === "function") {
-        onEnded();
+      video.onerror = null;
+
+      if (finished) {
+        finished();
       }
     };
 
-    const playPromise = videoPlayer.play();
+    const promise = video.play();
 
-    if (playPromise && typeof playPromise.catch === "function") {
-      playPromise.catch((error) => {
-        console.log("Video autoplay bloklandi:", error);
-
-        videoBusy = false;
-
-        // Foydalanuvchi keyinroq bosishi mumkin
-        showStartButton();
+    if (promise) {
+      promise.catch(error => {
+        console.log("Video play xatosi:", error);
       });
     }
   }
 
-  // Global qilish
-  window.playVideo = setVideo;
+  window.playVideo = playVideo;
 
-  // =====================================================
+  // ================================
+  // TUGMALARNI BLOKIROVKA
+  // ================================
+  function lockButtons() {
+
+    locked = true;
+
+    noteButtons.forEach(button => {
+      button.disabled = true;
+    });
+  }
+
+  // ================================
+  // TUGMALARNI OCHISH
+  // ================================
+  function unlockButtons() {
+
+    locked = false;
+
+    noteButtons.forEach(button => {
+      button.disabled = false;
+    });
+  }
+
+  // ================================
   // O'YINNI BOSHLASH
-  // =====================================================
-
+  // ================================
   function startGame() {
-    if (gameStarted) return;
+
+    if (gameStarted) {
+      return;
+    }
 
     gameStarted = true;
     score = 0;
-    questionNumber = 0;
-    currentTargetNote = null;
+    question = 0;
 
-    buttonsLocked = true;
+    lockButtons();
 
-    updateScore();
-    lockNoteButtons();
+    message(
+      "Salom! Notalarni birgalikda o‘rganamiz 🎵"
+    );
 
-    hideStartButton();
+    // 1. Greeting
+    playVideo(VIDEOS.greeting, () => {
 
-    setInstruction("Salom! Notalarni birgalikda o‘rganamiz 🎵");
-    setFeedback("");
+      // 2. Greeting tugagach keyingi savol
+      nextQuestion();
 
-    // Birinchi video
-    setVideo(VIDEOS.greeting, () => {
-      startNextQuestion();
     });
   }
 
   window.startGame = startGame;
 
-  // =====================================================
+  // ================================
   // KEYINGI SAVOL
-  // =====================================================
+  // ================================
+  function nextQuestion() {
 
-  function startNextQuestion() {
-    if (!gameStarted) return;
-
-    buttonsLocked = true;
-    lockNoteButtons();
-
-    questionNumber++;
+    question++;
 
     // Tasodifiy nota
-    currentTargetNote = getRandomNote();
+    currentNote = randomNote();
 
-    updateScore();
+    lockButtons();
 
-    setFeedback("");
-
-    setInstruction(
-      "Diqqat bilan tingla! Qaysi nota ekanini top-chi? 🎧"
+    message(
+      `Diqqat bilan tingla! 🎧 Savol ${question}`
     );
 
-    // Avval savol videosi
-    setVideo(VIDEOS.task, () => {
+    // Task_Prompt videosi
+    playVideo(VIDEOS.task, () => {
 
-      // Task video tugagach kerakli nota ovozi
-      setInstruction(
-        "Ovozni tingla va to‘g‘ri notani tanla 🎵"
+      message(
+        "Ovozni diqqat bilan tingla va notani top 🎵"
       );
 
-      playNote(currentTargetNote);
+      // Kerakli nota ovozi
+      playNote(currentNote);
 
-      unlockNoteButtons();
+      // Nota ovozi boshlangach tugmalar ochiladi
+      setTimeout(() => {
+        unlockButtons();
+      }, 200);
     });
   }
 
-  // =====================================================
-  // NOTA TUGMALARINI BLOKIROVKA QILISH
-  // =====================================================
-
-  function lockNoteButtons() {
-    noteButtons.forEach((button) => {
-      button.disabled = true;
-      button.classList.add("disabled");
-    });
-  }
-
-  function unlockNoteButtons() {
-    buttonsLocked = false;
-
-    noteButtons.forEach((button) => {
-      button.disabled = false;
-      button.classList.remove("disabled");
-    });
-  }
-
-  // =====================================================
-  // TANLANGAN NOTANI ANIQLASH
-  // =====================================================
-
-  function getButtonNote(button) {
-    if (!button) return "";
-
-    // data-note bo'lsa
-    if (button.dataset && button.dataset.note) {
-      return normalizeNote(button.dataset.note);
-    }
-
-    // Tugma matnidan olish
-    return normalizeNote(button.textContent);
-  }
-
-  // =====================================================
+  // ================================
   // JAVOBNI TEKSHIRISH
-  // =====================================================
-
+  // ================================
   function checkNote(selectedNote) {
+
     if (!gameStarted) {
       startGame();
       return;
     }
 
-    if (buttonsLocked) return;
+    if (locked) {
+      return;
+    }
 
-    const selected = normalizeNote(selectedNote);
-    const correct = normalizeNote(currentTargetNote);
+    const selected = normalize(selectedNote);
+    const correct = normalize(currentNote);
 
-    if (!selected) return;
+    if (!selected) {
+      return;
+    }
 
-    // Tanlangan notaning o'z ovozini chiqarish
+    // Tanlangan nota ovozini chiqarish
     playNote(selected);
 
-    // Tugmalarni vaqtincha bloklash
-    buttonsLocked = true;
-    lockNoteButtons();
+    // Tugmalarni vaqtincha yopish
+    lockButtons();
 
-    // -----------------------------------------
+    // ==============================
     // TO'G'RI JAVOB
-    // -----------------------------------------
-
+    // ==============================
     if (selected === correct) {
 
       score++;
-      updateScore();
 
-      setInstruction("BARAKALLA! 🎉");
-      setFeedback(
-        `To‘g‘ri! Bu ${correct} notasi edi. ⭐`
+      message(
+        `🎉 BARAKALLA! To‘g‘ri javob — ${correct}! ⭐`
       );
 
-      setVideo(VIDEOS.praise, () => {
+      // Praise video
+      playVideo(VIDEOS.praise, () => {
 
-        // Praise tugagach yangi savol
+        // Praise tugagach avtomatik yangi savol
         setTimeout(() => {
-          startNextQuestion();
-        }, 300);
+
+          nextQuestion();
+
+        }, 400);
       });
 
     }
 
-    // -----------------------------------------
-    // NOTO'G'RI JAVOB
-    // -----------------------------------------
-
+    // ==============================
+    // XATO JAVOB
+    // ==============================
     else {
 
-      setInstruction("Hechqisi yo‘q 😊");
-      setFeedback(
-        "Yana bir marta urinib ko‘r! 👂🎵"
+      message(
+        "😊 Hechqisi yo‘q! Yana bir marta urinib ko‘r."
       );
 
-      setVideo(VIDEOS.encouragement, () => {
+      // Encouragement video
+      playVideo(VIDEOS.encouragement, () => {
 
         setTimeout(() => {
 
-          setInstruction(
-            "Yana bir bor tingla va to‘g‘ri notani top 🎧"
+          message(
+            "Yana bir marta tingla va to‘g‘ri notani top 🎧"
           );
 
-          setFeedback("");
-
-          // O'sha savolni qayta eshittiramiz
+          // Shu savolning notasini yana eshittirish
           playNote(correct);
 
-          unlockNoteButtons();
+          // Tugmalarni yana ochish
+          unlockButtons();
 
-        }, 300);
+        }, 400);
       });
     }
   }
 
-  // Global qilish
   window.checkNote = checkNote;
 
-  // =====================================================
-  // NOTE TUGMALARIGA ULASH
-  // =====================================================
+  // ================================
+  // NOTA TUGMALARI
+  // ================================
+  noteButtons.forEach(button => {
 
-  noteButtons.forEach((button) => {
-
-    const inlineClick =
-      button.getAttribute("onclick");
-
-    // Agar HTML ichida onclick allaqachon bo'lsa,
-    // ikkinchi marta event qo'shmaymiz.
-    if (inlineClick) return;
+    // Agar HTML ichida onclick bor bo'lsa,
+    // alohida listener qo'shmaymiz.
+    if (button.getAttribute("onclick")) {
+      return;
+    }
 
     button.addEventListener("click", () => {
 
-      const note = getButtonNote(button);
+      const note =
+        button.textContent.trim();
 
       checkNote(note);
+
     });
   });
 
-  // =====================================================
-  // START BUTTON
-  // =====================================================
+  // ================================
+  // BOSHLASH TUGMASINI TOPISH
+  // ================================
+  const allButtons =
+    Array.from(document.querySelectorAll("button"));
 
-  let startButton = document.getElementById("startGameBtn");
+  const startButton = allButtons.find(button => {
 
-  function createStartButton() {
+    const text =
+      button.textContent
+        .trim()
+        .toLowerCase();
 
-    if (startButton) return startButton;
-
-    startButton = document.createElement("button");
-
-    startButton.id = "startGameBtn";
-    startButton.type = "button";
-    startButton.textContent = "▶️ O‘yinni boshlash";
-
-    startButton.style.display = "block";
-    startButton.style.margin = "15px auto";
-    startButton.style.padding = "14px 28px";
-    startButton.style.border = "none";
-    startButton.style.borderRadius = "14px";
-    startButton.style.fontSize = "18px";
-    startButton.style.fontWeight = "bold";
-    startButton.style.cursor = "pointer";
-    startButton.style.background = "#4CAF50";
-    startButton.style.color = "#ffffff";
-    startButton.style.boxShadow =
-      "0 4px 12px rgba(0,0,0,0.15)";
-
-    startButton.addEventListener(
-      "click",
-      startGame
+    return (
+      text.includes("boshlash") ||
+      text.includes("o‘yinni boshlash") ||
+      text.includes("o'yinni boshlash")
     );
+  });
 
-    // Eng qulay joyga qo'yamiz
-    if (videoPlayer && videoPlayer.parentElement) {
-      videoPlayer.parentElement.after(startButton);
-    } else {
-      document.body.prepend(startButton);
-    }
+  // ================================
+  // BOSHLASH TUGMASIGA ULASH
+  // ================================
+  if (startButton) {
 
-    return startButton;
-  }
+    startButton.addEventListener("click", () => {
 
-  function showStartButton() {
-    const btn = createStartButton();
-
-    if (!gameStarted) {
-      btn.style.display = "block";
-    }
-  }
-
-  function hideStartButton() {
-    if (startButton) {
-      startButton.style.display = "none";
-    }
-  }
-
-  // =====================================================
-  // BOSHLANG'ICH HOLAT
-  // =====================================================
-
-  function initializeGame() {
-
-    lockNoteButtons();
-
-    setInstruction(
-      "Ali bilan notalarni o‘rganamiz 🎵"
-    );
-
-    setFeedback("");
-
-    updateScore();
-
-    // Tugma mavjud bo'lsa
-    if (document.getElementById("startGameBtn")) {
-
-      startButton =
-        document.getElementById("startGameBtn");
-
-      startButton.addEventListener(
-        "click",
-        startGame
-      );
-
-    } else {
-
-      // Avval avtomatik boshlashga urinib ko'ramiz.
-      // Brauzer ruxsat bermasa Start tugmasi chiqadi.
       startGame();
-    }
-  }
 
-  // =====================================================
-  // DOM TAYYOR BO'LGACH ISHGA TUSHADI
-  // =====================================================
-
-  if (document.readyState === "loading") {
-
-    document.addEventListener(
-      "DOMContentLoaded",
-      initializeGame
-    );
+    });
 
   } else {
 
-    initializeGame();
-
+    console.log(
+      "Boshlash tugmasi topilmadi."
+    );
   }
+
+  // ================================
+  // BOSHLANG'ICH HOLAT
+  // ================================
+  lockButtons();
+
+  message(
+    "🎵 O‘yinni boshlash tugmasini bosing"
+  );
 
 })();
