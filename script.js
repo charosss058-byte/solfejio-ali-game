@@ -365,18 +365,104 @@ function playAli(file, callback) {
  
  
     /*
-      Video hech qachon "ended" bermasa ham
-      (masalan ba'zi brauzerlarning ichki
-      WebView'ida), o'yin qotib qolmasin.
-      Agar videolaringiz 8 soniyadan uzunroq
-      bo'lsa, shu raqamni oshiring.
+      MUHIM TUZATISH:
+      Zaxira vaqtni videoning HAQIQIY davomiyligiga
+      moslab qo'yamiz (video "loadedmetadata" bergach
+      buni bilib olamiz). Agar biror sababga ko'ra
+      davomiylikni bilib bo'lmasa, 12 soniyalik
+      xavfsiz chegara ishlatiladi. Bu videoning o'zi
+      bilan zaxira taymer bir vaqtda "to'qnashib"
+      qolishining oldini oladi.
     */
  
-    timerId = setTimeout(function() {
+    function scheduleFallback(seconds) {
  
-        done();
+        if (timerId !== null) {
+            clearTimeout(timerId);
+        }
  
-    }, 8000);
+        timerId = setTimeout(function() {
+ 
+            done();
+ 
+        }, seconds * 1000);
+ 
+    }
+ 
+ 
+    scheduleFallback(12);
+ 
+    video.addEventListener(
+        "loadedmetadata",
+        function onMeta() {
+ 
+            video.removeEventListener("loadedmetadata", onMeta);
+ 
+            if (callId !== videoCallId) {
+                return;
+            }
+ 
+            if (
+                video.duration &&
+                isFinite(video.duration) &&
+                video.duration > 0
+            ) {
+ 
+                scheduleFallback(video.duration + 2);
+ 
+            }
+ 
+        }
+    );
+ 
+}
+ 
+ 
+/* ================================
+   MEDIANI "OCHISH"
+================================ */
+ 
+/*
+  MUHIM TUZATISH:
+  Ko'p mobil brauzerlar (ayniqsa Telegram ichidagi brauzer)
+  faqat FOYDALANUVCHI bevosita bosgan tugma orqali birinchi
+  video/ovozni ishga tushirishga ruxsat beradi. Keyingi
+  videolar (Task, Praise, Encouragement) esa dastur tomonidan
+  AVTOMATIK ishga tushiriladi — va ko'pincha shu joyda
+  bloklanib, o'yin "to'xtab qoladi".
+ 
+  Yechim: "Boshlash" tugmasi bosilgan ONING O'ZIDA (hali
+  foydalanuvchi harakati "yangi" hisoblanadigan paytda) barcha
+  video/audio elementlarni bir zumga ishga tushirib, darhol
+  to'xtatib qo'yamiz. Bu ko'zga ko'rinmaydi, lekin shu orqali
+  brauzer ularning barchasiga shu sessiya davomida avtomatik
+  ishga tushirishga ruxsat beradi.
+*/
+function unlockMedia() {
+ 
+    const mediaElements = [video, ...Object.values(sounds)];
+ 
+    mediaElements.forEach(function(el) {
+ 
+        if (!el) {
+            return;
+        }
+ 
+        const p = el.play();
+ 
+        if (p && p.catch) {
+            p.catch(function() {});
+        }
+ 
+        el.pause();
+ 
+        try {
+            el.currentTime = 0;
+        } catch (e) {
+            /* e'tiborsiz qoldiramiz */
+        }
+ 
+    });
  
 }
  
@@ -398,6 +484,14 @@ function startGame() {
  
     currentNote = "";
     lastNote = "";
+ 
+ 
+    /*
+      Mediani "ochish" — eng birinchi ish, hali
+      foydalanuvchi bosishining "yangi" hisoblanadigan
+      lahzasida bo'lishi kerak.
+    */
+    unlockMedia();
  
  
     updateScore();
