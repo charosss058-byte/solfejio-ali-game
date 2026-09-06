@@ -1,3 +1,4 @@
+
 "use strict";
 
 /* ==========================================
@@ -80,6 +81,32 @@ Object.keys(NOTE_AUDIO).forEach((note) => {
 
 
 /* ==========================================
+   SCORE
+========================================== */
+
+function updateScore() {
+
+    if (scoreElement) {
+        scoreElement.textContent = score;
+    }
+
+}
+
+
+/* ==========================================
+   MESSAGE
+========================================== */
+
+function showMessage(text) {
+
+    if (feedbackElement) {
+        feedbackElement.textContent = text || "";
+    }
+
+}
+
+
+/* ==========================================
    LOCK BUTTONS
 ========================================== */
 
@@ -117,37 +144,7 @@ function unlockButtons() {
 
 
 /* ==========================================
-   MESSAGE
-========================================== */
-
-function showMessage(text) {
-
-    if (feedbackElement) {
-
-        feedbackElement.textContent = text;
-
-    }
-
-}
-
-
-/* ==========================================
-   SCORE
-========================================== */
-
-function updateScore() {
-
-    if (scoreElement) {
-
-        scoreElement.textContent = score;
-
-    }
-
-}
-
-
-/* ==========================================
-   CHOOSE RANDOM NOTE
+   CHOOSE NEW NOTE
 ========================================== */
 
 function chooseNextNote() {
@@ -184,40 +181,37 @@ function playNote(note) {
         const audio = audioBank[note];
 
         if (!audio) {
+            resolve();
+            return;
+        }
+
+        let finished = false;
+
+        const finish = () => {
+
+            if (finished) return;
+
+            finished = true;
+
+            audio.removeEventListener(
+                "ended",
+                finish
+            );
+
+            audio.removeEventListener(
+                "error",
+                finish
+            );
 
             resolve();
 
-            return;
-
-        }
+        };
 
         try {
 
             audio.pause();
 
             audio.currentTime = 0;
-
-            let finished = false;
-
-            const finish = () => {
-
-                if (finished) return;
-
-                finished = true;
-
-                audio.removeEventListener(
-                    "ended",
-                    finish
-                );
-
-                audio.removeEventListener(
-                    "error",
-                    finish
-                );
-
-                resolve();
-
-            };
 
             audio.addEventListener(
                 "ended",
@@ -243,7 +237,7 @@ function playNote(note) {
 
         } catch (error) {
 
-            resolve();
+            finish();
 
         }
 
@@ -258,22 +252,36 @@ function playNote(note) {
 
 function playVideo(fileName, afterVideo) {
 
-    if (!video) return;
+    if (!video) {
+
+        if (typeof afterVideo === "function") {
+            afterVideo();
+        }
+
+        return;
+
+    }
+
 
     const request = ++videoRequest;
 
+
     lockButtons();
+
 
     video.pause();
 
     video.onended = null;
     video.onerror = null;
 
+
     video.src = fileName;
 
     video.load();
 
+
     let finished = false;
+
 
     const finishVideo = () => {
 
@@ -283,8 +291,10 @@ function playVideo(fileName, afterVideo) {
 
         finished = true;
 
+
         video.onended = null;
         video.onerror = null;
+
 
         if (typeof afterVideo === "function") {
 
@@ -294,22 +304,37 @@ function playVideo(fileName, afterVideo) {
 
     };
 
+
     video.onended = finishVideo;
 
     video.onerror = finishVideo;
 
-    const playPromise = video.play();
 
-    if (playPromise) {
+    try {
 
-        playPromise.catch(() => {
+        const playPromise = video.play();
 
-            /*
-             * Video playback can be restricted
-             * by the browser.
-             */
 
-        });
+        if (playPromise) {
+
+            playPromise.catch(() => {
+
+                /*
+                 * MUHIM:
+                 * Agar Chrome videoni avtomatik
+                 * qo'yishga ruxsat bermasa,
+                 * o'yin qotib qolmaydi.
+                 */
+
+                finishVideo();
+
+            });
+
+        }
+
+    } catch (error) {
+
+        finishVideo();
 
     }
 
@@ -324,6 +349,7 @@ function startGame() {
 
     if (gameStarted) return;
 
+
     gameStarted = true;
 
     score = 0;
@@ -331,11 +357,13 @@ function startGame() {
     currentNote = null;
     previousNote = null;
 
+
     updateScore();
 
     showMessage("");
 
     lockButtons();
+
 
     if (startButton) {
 
@@ -344,17 +372,11 @@ function startGame() {
     }
 
 
-    /* --------------------------------------
-       1. GREETING
-    -------------------------------------- */
+    /* GREETING */
 
     playVideo(
         VIDEOS.greeting,
         () => {
-
-            /* --------------------------------
-               2. FIRST QUESTION
-            -------------------------------- */
 
             startQuestion();
 
@@ -372,37 +394,33 @@ function startQuestion() {
 
     if (!gameStarted) return;
 
+
     lockButtons();
 
     showMessage("");
 
+
     chooseNextNote();
 
 
-    /* --------------------------------------
-       TASK VIDEO
-    -------------------------------------- */
+    /* TASK */
 
     playVideo(
         VIDEOS.task,
         async () => {
 
-            /* -------------------------------
-               PLAY CORRECT NOTE
-            ------------------------------- */
+            /*
+             * Савол видеосидан кейин
+             * тўғри нота овози эшитилади.
+             */
 
             await playNote(currentNote);
 
 
-            /* -------------------------------
-               ENABLE ANSWERS
-            ------------------------------- */
+            if (!gameStarted) return;
 
-            if (gameStarted) {
 
-                unlockButtons();
-
-            }
+            unlockButtons();
 
         }
     );
@@ -426,16 +444,12 @@ async function handleNote(
     if (!currentNote) return;
 
 
-    /* --------------------------------------
-       LOCK ALL BUTTONS
-    -------------------------------------- */
+    /* LOCK */
 
     lockButtons();
 
 
-    /* --------------------------------------
-       PLAY SELECTED NOTE
-    -------------------------------------- */
+    /* PLAY SELECTED NOTE */
 
     await playNote(selectedNote);
 
@@ -448,31 +462,35 @@ async function handleNote(
 
         clickedButton.classList.add("correct");
 
+
         score++;
 
         updateScore();
+
 
         showMessage(
             "Баракалла! Тўғри топдингиз!"
         );
 
 
-        /* ----------------------------------
-           ALI PRAISE
-        ---------------------------------- */
+        /*
+         * ALI PRAISE
+         */
 
         playVideo(
             VIDEOS.praise,
             () => {
 
-                /* --------------------------
-                   NEW QUESTION
-                -------------------------- */
+                /*
+                 * Praise тугагач,
+                 * янги савол.
+                 */
 
                 startQuestion();
 
             }
         );
+
 
         return;
 
@@ -485,43 +503,37 @@ async function handleNote(
 
     clickedButton.classList.add("wrong");
 
+
     showMessage(
         "Яна уриниб кўринг!"
     );
 
 
-    /* --------------------------------------
-       ALI ENCOURAGEMENT
-    -------------------------------------- */
+    /*
+     * ALI ENCOURAGEMENT
+     */
 
     playVideo(
         VIDEOS.encouragement,
         async () => {
 
             /*
-             * IMPORTANT:
-             * currentNote DOES NOT CHANGE.
-             *
-             * The child gets another chance
-             * at the SAME question.
+             * ЎША САВОЛ ҚОЛАДИ.
+             * Янги нота танланмайди.
              */
 
             showMessage(
                 "Яна бир марта тингланг!"
             );
 
+
             await playNote(currentNote);
 
 
-            /* ------------------------------
-               TRY AGAIN
-            ------------------------------ */
+            if (!gameStarted) return;
 
-            if (gameStarted) {
 
-                unlockButtons();
-
-            }
+            unlockButtons();
 
         }
     );
@@ -542,7 +554,9 @@ noteButtons.forEach((button) => {
             const selectedNote =
                 button.getAttribute("data-note");
 
+
             if (!selectedNote) return;
+
 
             handleNote(
                 selectedNote,
@@ -581,7 +595,7 @@ if (startButton) {
 
 
 /* ==========================================
-   GLOBAL START FUNCTION
+   GLOBAL START
 ========================================== */
 
 window.startGame = startGame;
