@@ -1,67 +1,303 @@
+
 * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 body {
-    font-family: Arial, sans-serif;
-    background-color: #f0f4f8;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
+  font-family: Arial, sans-serif;
+  background: linear-gradient(135deg, #e8f5e9, #e3f2fd);
+  min-height: 100vh;
+  padding: 20px;
+  color: #263238;
 }
 
 .game-container {
-    width: 100%;
-    max-width: 450px;
-    background: #ffffff;
-    padding: 15px;
-    border-radius: 12px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-    text-align: center;
+  width: 100%;
+  max-width: 620px;
+  margin: 0 auto;
 }
 
-.video-container {
-    width: 100%;
-    height: 250px;
-    border-radius: 8px;
-    overflow: hidden;
-    background-color: #000;
+/* =========================
+   TOPBAR
+========================= */
+
+.topbar {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 16px 20px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
 }
 
-#aliVideo {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+.brand {
+  font-size: 22px;
+  font-weight: 800;
 }
 
-#instructionText {
-    color: #333;
-    font-size: 1.2rem;
-    margin: 15px 0;
-    font-weight: bold;
+.subtitle {
+  margin-top: 4px;
+  font-size: 13px;
+  color: #78909c;
 }
+
+.score {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* =========================
+   VIDEO
+========================= */
+
+.video-box {
+  position: relative;
+  background: #111;
+  border-radius: 20px;
+  overflow: hidden;
+  margin-bottom: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+.video-box video {
+  width: 100%;
+  display: block;
+  max-height: 420px;
+  background: #111;
+}
+
+.video-message {
+  display: none;
+  position: absolute;
+  left: 15px;
+  right: 15px;
+  bottom: 55px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.72);
+  color: white;
+  text-align: center;
+  font-size: 14px;
+}
+
+.video-message.show {
+  display: block;
+}
+
+/* =========================
+   GAME CARD
+========================= */
+
+.game-card {
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 25px;
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.09);
+  text-align: center;
+}
+
+.status-pill {
+  display: inline-block;
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: #e8f5e9;
+  color: #2e7d32;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.game-card h1 {
+  font-size: 25px;
+  margin-bottom: 8px;
+}
+
+.helperText,
+#helperText {
+  color: #78909c;
+  font-size: 14px;
+  line-height: 1.5;
+  margin-bottom: 20px;
+}
+
+/* =========================
+   NOTES
+========================= */
 
 .notes-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-top: 10px;
 }
 
 .note-btn {
-    padding: 12px;
-    font-size: 1.1rem;
-    font-weight: bold;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: transform 0.1s;
+  border: none;
+  border-radius: 14px;
+  padding: 16px 10px;
+  background: #4caf50;
+  color: white;
+  font-size: 19px;
+  font-weight: 800;
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    opacity 0.15s ease;
+  min-height: 58px;
 }
 
-.note-btn:active {
-    transform: scale(0.95);
-}                        
+.note-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 7px 15px rgba(76, 175, 80, 0.28);
+}
+
+.note-btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.note-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.note-btn.selected {
+  outline: 3px solid #263238;
+}
+
+.note-btn.correct {
+  background: #2e7d32;
+}
+
+.note-btn.wrong {
+  background: #c62828;
+}
+
+/* =========================
+   FEEDBACK
+========================= */
+
+.feedback {
+  min-height: 30px;
+  margin: 15px 0;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+/* =========================
+   BUTTONS
+========================= */
+
+.primary-btn,
+.secondary-btn {
+  width: 100%;
+  border: none;
+  border-radius: 14px;
+  padding: 15px;
+  font-size: 17px;
+  font-weight: 800;
+  cursor: pointer;
+  margin-top: 8px;
+}
+
+.primary-btn {
+  background: #1565c0;
+  color: white;
+}
+
+.primary-btn:hover {
+  background: #0d47a1;
+}
+
+.secondary-btn {
+  background: #eceff1;
+  color: #37474f;
+}
+
+.secondary-btn:hover {
+  background: #cfd8dc;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* =========================
+   RESULT
+========================= */
+
+.result-card {
+  margin-top: 16px;
+  background: white;
+  border-radius: 24px;
+  padding: 30px 25px;
+  text-align: center;
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.1);
+}
+
+.result-icon {
+  font-size: 55px;
+  margin-bottom: 10px;
+}
+
+.result-card h2 {
+  font-size: 30px;
+  margin-bottom: 10px;
+}
+
+.result-card p {
+  color: #607d8b;
+  font-size: 17px;
+  line-height: 1.5;
+}
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 520px) {
+
+  body {
+    padding: 10px;
+  }
+
+  .topbar {
+    padding: 14px;
+    border-radius: 16px;
+  }
+
+  .brand {
+    font-size: 18px;
+  }
+
+  .subtitle {
+    font-size: 11px;
+  }
+
+  .score {
+    font-size: 12px;
+  }
+
+  .game-card {
+    padding: 18px;
+    border-radius: 18px;
+  }
+
+  .game-card h1 {
+    font-size: 21px;
+  }
+
+  .note-btn {
+    min-height: 54px;
+    font-size: 17px;
+  }
+}
