@@ -1,10 +1,13 @@
-
-    (() => {
+(() => {
   "use strict";
 
-  // =========================
+  // =====================================================
+  // SOLFEGIO 1-SINF — ALI BILAN NOTALARNI O'RGANAMIZ
+  // =====================================================
+
+  // -----------------------------
   // VIDEOLAR
-  // =========================
+  // -----------------------------
   const VIDEOS = {
     greeting: "Greeting.mp4",
     task: "Task_Prompt.mp4",
@@ -12,695 +15,558 @@
     encouragement: "Encouragement.mp4"
   };
 
-  // =========================
-  // NOTALAR VA ULARNING OVOZLARI
-  // =========================
-  const NOTES = [
-    { name: "DO",  frequency: 261.63 },
-    { name: "RE",  frequency: 293.66 },
-    { name: "MI",  frequency: 329.63 },
-    { name: "FA",  frequency: 349.23 },
-    { name: "SOL", frequency: 392.00 },
-    { name: "LA",  frequency: 440.00 },
-    { name: "SI",  frequency: 493.88 }
-  ];
+  // -----------------------------
+  // NOTALAR VA MP3 OVOZLARI
+  // -----------------------------
+  const NOTE_AUDIO = {
+    DO: "C4.mp3",
+    RE: "D4.mp3",
+    MI: "E4.mp3",
+    FA: "F4.mp3",
+    SOL: "G4.mp3",
+    LA: "A4.mp3",
+    SI: "B4.mp3"
+  };
 
-  // =========================
-  // ELEMENTLAR
-  // =========================
-  const video = document.getElementById("aliVideo");
-  const videoMessage = document.getElementById("videoMessage");
+  const NOTES = Object.keys(NOTE_AUDIO);
 
-  const instructionText =
-    document.getElementById("instructionText");
-
-  const helperText =
-    document.getElementById("helperText");
-
-  const feedbackText =
-    document.getElementById("feedbackText");
-
-  const statusPill =
-    document.getElementById("statusPill");
-
-  const progressText =
-    document.getElementById("progressText");
-
-  const scoreText =
-    document.getElementById("scoreText");
-
-  const notesGrid =
-    document.getElementById("notesGrid");
-
-  const startBtn =
-    document.getElementById("startBtn");
-
-  const restartBtn =
-    document.getElementById("restartBtn");
-
-  const resultCard =
-    document.getElementById("resultCard");
-
-  const resultText =
-    document.getElementById("resultText");
-
-  const resultRestartBtn =
-    document.getElementById("resultRestartBtn");
-
-
-  // =========================
+  // -----------------------------
   // O'YIN HOLATI
-  // =========================
-  let audioContext = null;
-
-  let currentRound = 0;
-
+  // -----------------------------
+  let currentTargetNote = null;
   let score = 0;
-
-  let currentTarget = null;
-
+  let questionNumber = 0;
   let gameStarted = false;
+  let buttonsLocked = true;
+  let videoBusy = false;
 
-  let canAnswer = false;
+  // -----------------------------
+  // HTML ELEMENTLAR
+  // -----------------------------
+  const videoPlayer =
+    document.getElementById("aliVideo") ||
+    document.querySelector("video");
 
-  let timer = null;
+  const instruction =
+    document.getElementById("instructionText") ||
+    document.querySelector(".instruction-text");
 
+  const feedback =
+    document.getElementById("feedbackText") ||
+    document.querySelector(".feedback-text");
 
-  // =========================
-  // TELEGRAM
-  // =========================
-  function initTelegram() {
+  const scoreElement =
+    document.getElementById("score") ||
+    document.querySelector(".score");
 
-    if (
-      window.Telegram &&
-      window.Telegram.WebApp
-    ) {
+  const progressElement =
+    document.getElementById("progressText") ||
+    document.querySelector(".progress-text");
+
+  const noteButtons = Array.from(
+    document.querySelectorAll(".note-btn")
+  );
+
+  // =====================================================
+  // TELEGRAM WEB APP
+  // =====================================================
+
+  try {
+    if (window.Telegram && window.Telegram.WebApp) {
+      window.Telegram.WebApp.ready();
+      window.Telegram.WebApp.expand();
+    }
+  } catch (error) {
+    console.log("Telegram WebApp:", error);
+  }
+
+  // =====================================================
+  // AUDIO CACHE
+  // =====================================================
+
+  const noteAudio = {};
+
+  NOTES.forEach((note) => {
+    const audio = new Audio(NOTE_AUDIO[note]);
+    audio.preload = "auto";
+    audio.volume = 1;
+    noteAudio[note] = audio;
+  });
+
+  // =====================================================
+  // YORDAMCHI FUNKSIYALAR
+  // =====================================================
+
+  function normalizeNote(note) {
+    if (!note) return "";
+
+    const value = String(note)
+      .trim()
+      .toUpperCase();
+
+    const aliases = {
+      DO: "DO",
+      RE: "RE",
+      MI: "MI",
+      FA: "FA",
+      SOL: "SOL",
+      SO: "SOL",
+      LA: "LA",
+      SI: "SI",
+      TI: "SI"
+    };
+
+    return aliases[value] || value;
+  }
+
+  function setInstruction(text) {
+    if (instruction) {
+      instruction.textContent = text;
+    }
+  }
+
+  function setFeedback(text) {
+    if (feedback) {
+      feedback.textContent = text;
+    }
+  }
+
+  function updateScore() {
+    if (scoreElement) {
+      scoreElement.textContent = `⭐ ${score}`;
+    }
+
+    if (progressElement) {
+      progressElement.textContent =
+        `Savol: ${questionNumber}`;
+    }
+  }
+
+  function getRandomNote() {
+    const index = Math.floor(Math.random() * NOTES.length);
+    return NOTES[index];
+  }
+
+  // =====================================================
+  // NOTA OVOZINI O'YNATISH
+  // =====================================================
+
+  function stopAllNotes() {
+    NOTES.forEach((note) => {
+      const audio = noteAudio[note];
+
+      if (!audio) return;
+
       try {
-        const tg = window.Telegram.WebApp;
-
-        tg.ready();
-        tg.expand();
-
+        audio.pause();
+        audio.currentTime = 0;
       } catch (error) {
-        console.log("Telegram WebApp:", error);
+        console.log(error);
       }
-    }
+    });
   }
 
+  async function playNote(note) {
+    const normalized = normalizeNote(note);
+    const audio = noteAudio[normalized];
 
-  // =========================
-  // AUDIO TIZIMI
-  // =========================
-  function initAudio() {
-
-    if (!audioContext) {
-
-      const AudioContext =
-        window.AudioContext ||
-        window.webkitAudioContext;
-
-      if (!AudioContext) {
-        return null;
-      }
-
-      audioContext = new AudioContext();
-    }
-
-    if (
-      audioContext.state === "suspended"
-    ) {
-      audioContext.resume().catch(() => {});
-    }
-
-    return audioContext;
-  }
-
-
-  // =========================
-  // NOTA OVOZINI CHIQARISH
-  // =========================
-  function playNote(noteName) {
-
-    const note = NOTES.find(
-      item => item.name === noteName
-    );
-
-    const ctx = initAudio();
-
-    if (!note || !ctx) {
+    if (!audio) {
+      console.warn("Nota topilmadi:", note);
       return;
     }
 
-    const oscillator =
-      ctx.createOscillator();
+    stopAllNotes();
 
-    const gain =
-      ctx.createGain();
-
-    oscillator.type = "sine";
-
-    oscillator.frequency.setValueAtTime(
-      note.frequency,
-      ctx.currentTime
-    );
-
-    gain.gain.setValueAtTime(
-      0.0001,
-      ctx.currentTime
-    );
-
-    gain.gain.exponentialRampToValueAtTime(
-      0.25,
-      ctx.currentTime + 0.03
-    );
-
-    gain.gain.exponentialRampToValueAtTime(
-      0.0001,
-      ctx.currentTime + 0.9
-    );
-
-    oscillator.connect(gain);
-
-    gain.connect(ctx.destination);
-
-    oscillator.start();
-
-    oscillator.stop(
-      ctx.currentTime + 0.95
-    );
+    try {
+      audio.currentTime = 0;
+      await audio.play();
+    } catch (error) {
+      console.log("Nota ovozini ijro etib bo'lmadi:", error);
+    }
   }
 
+  // Global qilish — HTML ichidagi onclick uchun
+  window.playNote = playNote;
 
-  // =========================
-  // VIDEO QO'YISH
-  // =========================
-  function playVideo(
-    filename,
-    message = ""
-  ) {
+  // =====================================================
+  // VIDEO O'YNATISH
+  // =====================================================
 
-    clearTimeout(timer);
-
-    if (!video) {
+  function setVideo(fileName, onEnded) {
+    if (!videoPlayer) {
+      console.warn("Video elementi topilmadi.");
+      if (typeof onEnded === "function") {
+        onEnded();
+      }
       return;
     }
 
-    video.src = filename;
+    videoBusy = true;
 
-    video.load();
+    videoPlayer.pause();
 
-    if (videoMessage) {
+    videoPlayer.onended = null;
+    videoPlayer.onerror = null;
 
-      videoMessage.textContent =
-        message;
+    videoPlayer.loop = false;
+    videoPlayer.controls = false;
 
-      videoMessage.classList.toggle(
-        "show",
-        Boolean(message)
-      );
-    }
+    // Eski videoni to'liq tozalash
+    videoPlayer.removeAttribute("src");
 
-    const promise =
-      video.play();
+    // Yangi video
+    videoPlayer.src = fileName;
+    videoPlayer.load();
 
-    if (
-      promise &&
-      typeof promise.catch === "function"
-    ) {
+    videoPlayer.onended = () => {
+      videoBusy = false;
 
-      promise.catch(() => {
+      if (typeof onEnded === "function") {
+        onEnded();
+      }
+    };
 
-        if (videoMessage) {
+    videoPlayer.onerror = () => {
+      console.warn("Video yuklanmadi:", fileName);
 
-          videoMessage.textContent =
-            "Videoni ko‘rish uchun ▶ tugmasini bosing.";
+      videoBusy = false;
 
-          videoMessage.classList.add("show");
-        }
+      if (typeof onEnded === "function") {
+        onEnded();
+      }
+    };
+
+    const playPromise = videoPlayer.play();
+
+    if (playPromise && typeof playPromise.catch === "function") {
+      playPromise.catch((error) => {
+        console.log("Video autoplay bloklandi:", error);
+
+        videoBusy = false;
+
+        // Foydalanuvchi keyinroq bosishi mumkin
+        showStartButton();
       });
     }
   }
 
+  // Global qilish
+  window.playVideo = setVideo;
 
-  // =========================
-  // TUGMALARNI YOQISH/O'CHIRISH
-  // =========================
-  function setButtons(enabled) {
+  // =====================================================
+  // O'YINNI BOSHLASH
+  // =====================================================
 
-    const buttons =
-      notesGrid.querySelectorAll(
-        ".note-btn"
-      );
+  function startGame() {
+    if (gameStarted) return;
 
-    buttons.forEach(button => {
+    gameStarted = true;
+    score = 0;
+    questionNumber = 0;
+    currentTargetNote = null;
 
-      button.disabled = !enabled;
+    buttonsLocked = true;
 
-      button.classList.remove(
-        "selected",
-        "correct",
-        "wrong"
-      );
+    updateScore();
+    lockNoteButtons();
+
+    hideStartButton();
+
+    setInstruction("Salom! Notalarni birgalikda o‘rganamiz 🎵");
+    setFeedback("");
+
+    // Birinchi video
+    setVideo(VIDEOS.greeting, () => {
+      startNextQuestion();
     });
   }
 
+  window.startGame = startGame;
 
-  // =========================
-  // PROGRESS
-  // =========================
-  function updateProgress() {
+  // =====================================================
+  // KEYINGI SAVOL
+  // =====================================================
 
-    progressText.textContent =
-      `${currentRound + 1} / ${NOTES.length}`;
+  function startNextQuestion() {
+    if (!gameStarted) return;
 
-    scoreText.textContent =
-      `⭐ ${score}`;
-  }
+    buttonsLocked = true;
+    lockNoteButtons();
 
+    questionNumber++;
 
-  // =========================
-  // YANGI TOPSHIRIQ
-  // =========================
-  function startRound() {
+    // Tasodifiy nota
+    currentTargetNote = getRandomNote();
 
-    clearTimeout(timer);
+    updateScore();
 
-    if (
-      currentRound >= NOTES.length
-    ) {
+    setFeedback("");
 
-      finishGame();
-
-      return;
-    }
-
-    currentTarget =
-      NOTES[currentRound];
-
-    canAnswer = false;
-
-    setButtons(false);
-
-    updateProgress();
-
-    statusPill.textContent =
-      "🎯 Topshiriq";
-
-    instructionText.textContent =
-      "Diqqat bilan tinglang!";
-
-    helperText.textContent =
-      "Ali topshiriqni tushuntiradi. Keyin kerakli notani tanlang.";
-
-    feedbackText.textContent = "";
-
-    playVideo(
-      VIDEOS.task,
-      "Ali topshiriqni tushuntirmoqda…"
+    setInstruction(
+      "Diqqat bilan tingla! Qaysi nota ekanini top-chi? 🎧"
     );
 
+    // Avval savol videosi
+    setVideo(VIDEOS.task, () => {
 
-    // Task videosi tugaganda javoblarni ochamiz
-    video.onended = function () {
+      // Task video tugagach kerakli nota ovozi
+      setInstruction(
+        "Ovozni tingla va to‘g‘ri notani tanla 🎵"
+      );
 
-      enableAnswer();
+      playNote(currentTargetNote);
 
-    };
-
-
-    // Agar video ishlamasa yoki foydalanuvchi
-    // videoni o'tkazib yuborsa, birozdan keyin
-    // tugmalar ochiladi.
-    timer = setTimeout(
-      enableAnswer,
-      5000
-    );
+      unlockNoteButtons();
+    });
   }
 
+  // =====================================================
+  // NOTA TUGMALARINI BLOKIROVKA QILISH
+  // =====================================================
 
-  // =========================
-  // JAVOB BERISHNI BOSHLASH
-  // =========================
-  function enableAnswer() {
-
-    if (canAnswer) {
-      return;
-    }
-
-    clearTimeout(timer);
-
-    canAnswer = true;
-
-    setButtons(true);
-
-    statusPill.textContent =
-      "🎵 Notani tanlang";
-
-    instructionText.textContent =
-      "Qaysi nota kerak?";
-
-    helperText.textContent =
-      `Kerakli nota: ${currentTarget.name} ni toping.`;
-
-    if (videoMessage) {
-      videoMessage.classList.remove("show");
-    }
+  function lockNoteButtons() {
+    noteButtons.forEach((button) => {
+      button.disabled = true;
+      button.classList.add("disabled");
+    });
   }
 
+  function unlockNoteButtons() {
+    buttonsLocked = false;
 
-  // =========================
+    noteButtons.forEach((button) => {
+      button.disabled = false;
+      button.classList.remove("disabled");
+    });
+  }
+
+  // =====================================================
+  // TANLANGAN NOTANI ANIQLASH
+  // =====================================================
+
+  function getButtonNote(button) {
+    if (!button) return "";
+
+    // data-note bo'lsa
+    if (button.dataset && button.dataset.note) {
+      return normalizeNote(button.dataset.note);
+    }
+
+    // Tugma matnidan olish
+    return normalizeNote(button.textContent);
+  }
+
+  // =====================================================
   // JAVOBNI TEKSHIRISH
-  // =========================
-  function checkAnswer(
-    selectedNote,
-    button
-  ) {
+  // =====================================================
 
-    if (!canAnswer) {
+  function checkNote(selectedNote) {
+    if (!gameStarted) {
+      startGame();
       return;
     }
 
-    // Har bir bosishda nota ovozi
-    playNote(selectedNote);
+    if (buttonsLocked) return;
 
-    button.classList.add(
-      "selected"
-    );
+    const selected = normalizeNote(selectedNote);
+    const correct = normalizeNote(currentTargetNote);
 
-    canAnswer = false;
+    if (!selected) return;
 
-    setButtons(false);
+    // Tanlangan notaning o'z ovozini chiqarish
+    playNote(selected);
 
+    // Tugmalarni vaqtincha bloklash
+    buttonsLocked = true;
+    lockNoteButtons();
 
-    // =====================
+    // -----------------------------------------
     // TO'G'RI JAVOB
-    // =====================
-    if (
-      selectedNote ===
-      currentTarget.name
-    ) {
+    // -----------------------------------------
+
+    if (selected === correct) {
 
       score++;
+      updateScore();
 
-      button.classList.add(
-        "correct"
+      setInstruction("BARAKALLA! 🎉");
+      setFeedback(
+        `To‘g‘ri! Bu ${correct} notasi edi. ⭐`
       );
 
-      statusPill.textContent =
-        "🎉 To‘g‘ri!";
+      setVideo(VIDEOS.praise, () => {
 
-      instructionText.textContent =
-        "Barakalla! Juda yaxshi!";
-
-      helperText.textContent =
-        `${currentTarget.name} — to‘g‘ri javob!`;
-
-      feedbackText.textContent =
-        "👏 Ajoyib topdingiz!";
-
-      scoreText.textContent =
-        `⭐ ${score}`;
-
-      playVideo(
-        VIDEOS.praise,
-        "Barakalla! 🎉"
-      );
-
-
-      // Praise videosidan keyin keyingi nota
-      video.onended = function () {
-
-        currentRound++;
-
-        startRound();
-      };
-
-
-      // Video ishlamasa ham o'tib ketadi
-      timer = setTimeout(
-        () => {
-
-          currentRound++;
-
-          startRound();
-
-        },
-        5000
-      );
+        // Praise tugagach yangi savol
+        setTimeout(() => {
+          startNextQuestion();
+        }, 300);
+      });
 
     }
 
-    // =====================
+    // -----------------------------------------
     // NOTO'G'RI JAVOB
-    // =====================
+    // -----------------------------------------
+
     else {
 
-      button.classList.add(
-        "wrong"
+      setInstruction("Hechqisi yo‘q 😊");
+      setFeedback(
+        "Yana bir marta urinib ko‘r! 👂🎵"
       );
 
-      statusPill.textContent =
-        "💪 Yana urinib ko‘ring";
+      setVideo(VIDEOS.encouragement, () => {
 
-      instructionText.textContent =
-        "Bu boshqa nota!";
+        setTimeout(() => {
 
-      helperText.textContent =
-        "Ali sizga yana bir imkoniyat beradi.";
-
-      feedbackText.textContent =
-        "🎵 Diqqat bilan tinglang.";
-
-      playVideo(
-        VIDEOS.encouragement,
-        "Yana bir marta urinib ko‘ring! 💪"
-      );
-
-
-      video.onended = function () {
-
-        enableAnswer();
-
-      };
-
-
-      timer = setTimeout(
-        enableAnswer,
-        4000
-      );
-    }
-  }
-
-
-  // =========================
-  // O'YINNI TUGATISH
-  // =========================
-  function finishGame() {
-
-    clearTimeout(timer);
-
-    canAnswer = false;
-
-    setButtons(false);
-
-    progressText.textContent =
-      "7 / 7";
-
-    scoreText.textContent =
-      `⭐ ${score}`;
-
-    statusPill.textContent =
-      "🏆 Natija";
-
-    instructionText.textContent =
-      "O‘yin tugadi!";
-
-    helperText.textContent =
-      "Siz barcha 7 ta nota topshirig‘ini bajardingiz.";
-
-    feedbackText.textContent =
-      "🎉 Barakalla!";
-
-    resultText.textContent =
-      `7 ta topshiriqdan ${score} tasini to‘g‘ri topdingiz.`;
-
-    resultCard.classList.remove(
-      "hidden"
-    );
-
-    restartBtn.classList.remove(
-      "hidden"
-    );
-  }
-
-
-  // =========================
-  // O'YINNI BOSHLASH
-  // =========================
-  function startGame() {
-
-    clearTimeout(timer);
-
-    initAudio();
-
-    gameStarted = true;
-
-    currentRound = 0;
-
-    score = 0;
-
-    startBtn.classList.add(
-      "hidden"
-    );
-
-    restartBtn.classList.remove(
-      "hidden"
-    );
-
-    resultCard.classList.add(
-      "hidden"
-    );
-
-    startRound();
-  }
-
-
-  // =========================
-  // O'YINNI QAYTA BOSHLASH
-  // =========================
-  function restartGame() {
-
-    clearTimeout(timer);
-
-    gameStarted = false;
-
-    currentRound = 0;
-
-    score = 0;
-
-    currentTarget = null;
-
-    canAnswer = false;
-
-    resultCard.classList.add(
-      "hidden"
-    );
-
-    restartBtn.classList.add(
-      "hidden"
-    );
-
-    startBtn.classList.remove(
-      "hidden"
-    );
-
-    statusPill.textContent =
-      "🎵 Tayyorlanamiz";
-
-    instructionText.textContent =
-      "Notalarni o‘rganamiz!";
-
-    helperText.textContent =
-      "Avval Ali bilan tanishib oling.";
-
-    feedbackText.textContent = "";
-
-    updateProgress();
-
-    setButtons(false);
-
-    playVideo(
-      VIDEOS.greeting,
-      "Ali siz bilan salomlashmoqda…"
-    );
-  }
-
-
-  // =========================
-  // NOTA TUGMALARI
-  // =========================
-  notesGrid.addEventListener(
-    "click",
-    event => {
-
-      const button =
-        event.target.closest(
-          ".note-btn"
-        );
-
-      if (!button) {
-        return;
-      }
-
-      const selectedNote =
-        button.dataset.note;
-
-      checkAnswer(
-        selectedNote,
-        button
-      );
-    }
-  );
-
-
-  // =========================
-  // BOSHLASH TUGMASI
-  // =========================
-  startBtn.addEventListener(
-    "click",
-    startGame
-  );
-
-
-  // =========================
-  // QAYTA BOSHLASH
-  // =========================
-  restartBtn.addEventListener(
-    "click",
-    restartGame
-  );
-
-  resultRestartBtn.addEventListener(
-    "click",
-    restartGame
-  );
-
-
-  // =========================
-  // VIDEO TUGAGANDA
-  // =========================
-  video.addEventListener(
-    "ended",
-    () => {
-
-      if (!gameStarted) {
-
-        if (videoMessage) {
-
-          videoMessage.textContent =
-            "Tanishtiruv tugadi. Boshlash tugmasini bosing.";
-
-          videoMessage.classList.add(
-            "show"
+          setInstruction(
+            "Yana bir bor tingla va to‘g‘ri notani top 🎧"
           );
-        }
-      }
+
+          setFeedback("");
+
+          // O'sha savolni qayta eshittiramiz
+          playNote(correct);
+
+          unlockNoteButtons();
+
+        }, 300);
+      });
     }
-  );
+  }
 
+  // Global qilish
+  window.checkNote = checkNote;
 
-  // =========================
+  // =====================================================
+  // NOTE TUGMALARIGA ULASH
+  // =====================================================
+
+  noteButtons.forEach((button) => {
+
+    const inlineClick =
+      button.getAttribute("onclick");
+
+    // Agar HTML ichida onclick allaqachon bo'lsa,
+    // ikkinchi marta event qo'shmaymiz.
+    if (inlineClick) return;
+
+    button.addEventListener("click", () => {
+
+      const note = getButtonNote(button);
+
+      checkNote(note);
+    });
+  });
+
+  // =====================================================
+  // START BUTTON
+  // =====================================================
+
+  let startButton = document.getElementById("startGameBtn");
+
+  function createStartButton() {
+
+    if (startButton) return startButton;
+
+    startButton = document.createElement("button");
+
+    startButton.id = "startGameBtn";
+    startButton.type = "button";
+    startButton.textContent = "▶️ O‘yinni boshlash";
+
+    startButton.style.display = "block";
+    startButton.style.margin = "15px auto";
+    startButton.style.padding = "14px 28px";
+    startButton.style.border = "none";
+    startButton.style.borderRadius = "14px";
+    startButton.style.fontSize = "18px";
+    startButton.style.fontWeight = "bold";
+    startButton.style.cursor = "pointer";
+    startButton.style.background = "#4CAF50";
+    startButton.style.color = "#ffffff";
+    startButton.style.boxShadow =
+      "0 4px 12px rgba(0,0,0,0.15)";
+
+    startButton.addEventListener(
+      "click",
+      startGame
+    );
+
+    // Eng qulay joyga qo'yamiz
+    if (videoPlayer && videoPlayer.parentElement) {
+      videoPlayer.parentElement.after(startButton);
+    } else {
+      document.body.prepend(startButton);
+    }
+
+    return startButton;
+  }
+
+  function showStartButton() {
+    const btn = createStartButton();
+
+    if (!gameStarted) {
+      btn.style.display = "block";
+    }
+  }
+
+  function hideStartButton() {
+    if (startButton) {
+      startButton.style.display = "none";
+    }
+  }
+
+  // =====================================================
   // BOSHLANG'ICH HOLAT
-  // =========================
-  initTelegram();
+  // =====================================================
 
-  setButtons(false);
+  function initializeGame() {
 
-  updateProgress();
+    lockNoteButtons();
 
-  playVideo(
-    VIDEOS.greeting,
-    "Ali siz bilan salomlashmoqda…"
-  );
+    setInstruction(
+      "Ali bilan notalarni o‘rganamiz 🎵"
+    );
 
-})(); 
+    setFeedback("");
+
+    updateScore();
+
+    // Tugma mavjud bo'lsa
+    if (document.getElementById("startGameBtn")) {
+
+      startButton =
+        document.getElementById("startGameBtn");
+
+      startButton.addEventListener(
+        "click",
+        startGame
+      );
+
+    } else {
+
+      // Avval avtomatik boshlashga urinib ko'ramiz.
+      // Brauzer ruxsat bermasa Start tugmasi chiqadi.
+      startGame();
+    }
+  }
+
+  // =====================================================
+  // DOM TAYYOR BO'LGACH ISHGA TUSHADI
+  // =====================================================
+
+  if (document.readyState === "loading") {
+
+    document.addEventListener(
+      "DOMContentLoaded",
+      initializeGame
+    );
+
+  } else {
+
+    initializeGame();
+
+  }
+
+})();
