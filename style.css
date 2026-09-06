@@ -552,4 +552,303 @@ body {
         width: 180px;
     }
 
+}/* =========================================================
+   FINAL RESPONSIVE LAYOUT
+   Real musical staff positions
+   ========================================================= */
+
+.game {
+    width: min(1180px, 96vw);
+    padding: 12px 0 18px;
+}
+
+.top {
+    height: 58px;
+    margin-bottom: 10px;
+}
+
+.title {
+    font-size: 25px;
+}
+
+.score {
+    font-size: 22px;
+}
+
+.video-wrapper {
+    height: 390px;
+    border-radius: 22px;
+}
+
+.start-button {
+    width: 250px;
+    height: 52px;
+    margin-top: 10px;
+    font-size: 21px;
+    border-radius: 15px;
+}
+
+.notes-grid {
+    margin-top: 12px;
+    gap: 10px;
+    grid-template-columns: repeat(7, 1fr);
+}
+
+.note-btn {
+    height: 105px;
+    border-radius: 17px;
+}
+
+/* kattaroq 5 qatorli nota chizig'i */
+.staff {
+    left: 7%;
+    right: 7%;
+    height: 60px;
+    top: 50%;
+    background:
+        linear-gradient(
+            to bottom,
+            transparent 0,
+            transparent 4px,
+            #47708c 4px,
+            #47708c 6px,
+
+            transparent 6px,
+            transparent 17px,
+            #47708c 17px,
+            #47708c 19px,
+
+            transparent 19px,
+            transparent 30px,
+            #47708c 30px,
+            #47708c 32px,
+
+            transparent 32px,
+            transparent 43px,
+            #47708c 43px,
+            #47708c 45px,
+
+            transparent 45px,
+            transparent 56px,
+            #47708c 56px,
+            #47708c 58px
+        );
+}
+
+/* kattaroq nota */
+.note-head {
+    width: 24px;
+    height: 17px;
+}
+
+.note-stem {
+    width: 4px;
+    height: 36px;
+}
+
+/* =========================================================
+   HAQIQIY NOTA JOYLASHUVI
+   DO - pastda, qo'shimcha chiziqda
+   RE - pastdagi oraliqda
+   MI - pastki chiziqda
+   FA - oraliqda
+   SOL - o'rta chiziqda
+   LA - oraliqda
+   SI - yuqoridagi chiziqda
+   ========================================================= */
+
+.note-do .note-head {
+    top: 47px;
+}
+
+.note-do .note-stem {
+    top: 12px;
+}
+
+/* DO uchun qo'shimcha chiziq */
+.note-do .staff::after {
+    content: "";
+    position: absolute;
+    width: 30px;
+    height: 2px;
+    background: #47708c;
+    left: 50%;
+    top: 61px;
+    transform: translateX(-50%);
+}
+
+.note-re .note-head {
+    top: 40px;
+}
+
+.note-re .note-stem {
+    top: 5px;
+}
+
+.note-mi .note-head {
+    top: 34px;
+}
+
+.note-mi .note-stem {
+    top: -1px;
+}
+
+.note-fa .note-head {
+    top: 28px;
+}
+
+.note-fa .note-stem {
+    top: -7px;
+}
+
+.note-sol .note-head {
+    top: 22px;
+}
+
+.note-sol .note-stem {
+    top: -13px;
+}
+
+.note-la .note-head {
+    top: 16px;
+}
+
+.note-la .note-stem {
+    top: -19px;
+}
+
+.note-si .note-head {
+    top: 10px;
+}
+
+.note-si .note-stem {
+    top: -25px;
+}
+
+/* =========================================================
+   TELEFON
+   ========================================================= */
+
+@media (max-width: 800px) {
+
+    .game {
+        width: 96vw;
+        padding-top: 9px;
+    }
+
+    .top {
+        height: 54px;
+    }
+
+    .title {
+        font-size: 22px;
+    }
+
+    .score {
+        font-size: 20px;
+    }
+
+    .video-wrapper {
+        height: 330px;
+    }
+
+    .start-button {
+        width: 235px;
+        height: 50px;
+        font-size: 20px;
+    }
+
+    .notes-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 9px;
+    }
+
+    .note-btn {
+        height: 92px;
+    }
+
+    .staff {
+        height: 55px;
+    }
+}
+
+/* =========================================================
+   TELEGRAM / KATTA TELEFON
+   ========================================================= */
+
+@media (max-width: 520px) {
+
+    .game {
+        width: 94vw;
+        padding-top: 8px;
+    }
+
+    .top {
+        height: 50px;
+    }
+
+    .title {
+        font-size: 20px;
+    }
+
+    .score {
+        font-size: 19px;
+    }
+
+    .video-wrapper {
+        height: 300px;
+    }
+
+    .start-button {
+        width: 230px;
+        height: 52px;
+        font-size: 20px;
+    }
+
+    .notes-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+        margin-top: 10px;
+    }
+
+    .note-btn {
+        height: 88px;
+    }
+
+    .staff {
+        left: 6%;
+        right: 6%;
+        transform: translateY(-50%);
+    }
+
+    .note-head {
+        width: 22px;
+        height: 16px;
+    }
+
+    .note-stem {
+        width: 4px;
+        height: 34px;
+    }
+}
+
+/* =========================================================
+   KICHIK TELEFON
+   ========================================================= */
+
+@media (max-width: 380px) {
+
+    .video-wrapper {
+        height: 260px;
+    }
+
+    .start-button {
+        width: 210px;
+        height: 48px;
+        font-size: 19px;
+    }
+
+    .note-btn {
+        height: 78px;
+    }
 }
