@@ -1,12 +1,14 @@
 "use strict";
 
-/* =========================================================
-   SOLFEJIO 1-SINF — PROFESSIONAL GAME ENGINE
-   ========================================================= */
+/* ==========================================
+   SOLFEJIO 1-SINF
+   GAME ENGINE
+========================================== */
 
-/* -----------------------------
-   1. VIDEO FILES
------------------------------ */
+
+/* ==========================================
+   VIDEO FILES
+========================================== */
 
 const VIDEOS = {
     greeting: "Greeting.mp4",
@@ -16,9 +18,9 @@ const VIDEOS = {
 };
 
 
-/* -----------------------------
-   2. NOTE AUDIO FILES
------------------------------ */
+/* ==========================================
+   NOTE AUDIO FILES
+========================================== */
 
 const NOTE_AUDIO = {
     DO: "C4.mp3",
@@ -31,79 +33,122 @@ const NOTE_AUDIO = {
 };
 
 
-/* -----------------------------
-   3. GAME ELEMENTS
------------------------------ */
+/* ==========================================
+   ELEMENTS
+========================================== */
 
 const video = document.getElementById("aliVideo");
 const startButton = document.getElementById("startGameBtn");
 const scoreElement = document.getElementById("score");
 const feedbackElement = document.getElementById("feedbackText");
-const noteButtons = Array.from(document.querySelectorAll(".note-btn"));
+
+const noteButtons = Array.from(
+    document.querySelectorAll(".note-btn")
+);
 
 
-/* -----------------------------
-   4. GAME STATE
------------------------------ */
+/* ==========================================
+   GAME STATE
+========================================== */
 
 let gameStarted = false;
 let gameLocked = true;
+
 let currentNote = null;
 let previousNote = null;
+
 let score = 0;
-let videoSequence = 0;
+
+let videoRequest = 0;
 
 
-/* -----------------------------
-   5. PRELOAD NOTE AUDIO
------------------------------ */
+/* ==========================================
+   AUDIO BANK
+========================================== */
 
 const audioBank = {};
 
 Object.keys(NOTE_AUDIO).forEach((note) => {
+
     const audio = new Audio(NOTE_AUDIO[note]);
+
     audio.preload = "auto";
+
     audioBank[note] = audio;
+
 });
 
 
-/* -----------------------------
-   6. BASIC UI
------------------------------ */
+/* ==========================================
+   LOCK BUTTONS
+========================================== */
 
-function lockNoteButtons() {
+function lockButtons() {
+
     gameLocked = true;
 
     noteButtons.forEach((button) => {
+
         button.disabled = true;
+
         button.classList.remove("correct");
         button.classList.remove("wrong");
+
     });
+
 }
 
 
-function unlockNoteButtons() {
+/* ==========================================
+   UNLOCK BUTTONS
+========================================== */
+
+function unlockButtons() {
+
     gameLocked = false;
 
     noteButtons.forEach((button) => {
+
         button.disabled = false;
+
     });
+
 }
 
+
+/* ==========================================
+   MESSAGE
+========================================== */
+
+function showMessage(text) {
+
+    if (feedbackElement) {
+
+        feedbackElement.textContent = text;
+
+    }
+
+}
+
+
+/* ==========================================
+   SCORE
+========================================== */
 
 function updateScore() {
-    scoreElement.textContent = score;
+
+    if (scoreElement) {
+
+        scoreElement.textContent = score;
+
+    }
+
 }
 
 
-function setFeedback(text) {
-    feedbackElement.textContent = text;
-}
-
-
-/* -----------------------------
-   7. CHOOSE RANDOM NOTE
------------------------------ */
+/* ==========================================
+   CHOOSE RANDOM NOTE
+========================================== */
 
 function chooseNextNote() {
 
@@ -112,17 +157,25 @@ function chooseNextNote() {
     let newNote;
 
     do {
-        newNote = notes[Math.floor(Math.random() * notes.length)];
-    } while (notes.length > 1 && newNote === previousNote);
+
+        newNote =
+            notes[Math.floor(Math.random() * notes.length)];
+
+    } while (
+        notes.length > 1 &&
+        newNote === previousNote
+    );
 
     previousNote = newNote;
+
     currentNote = newNote;
+
 }
 
 
-/* -----------------------------
-   8. PLAY NOTE AUDIO
------------------------------ */
+/* ==========================================
+   PLAY NOTE
+========================================== */
 
 function playNote(note) {
 
@@ -131,54 +184,85 @@ function playNote(note) {
         const audio = audioBank[note];
 
         if (!audio) {
+
             resolve();
+
             return;
+
         }
 
         try {
+
             audio.pause();
+
             audio.currentTime = 0;
 
             let finished = false;
 
             const finish = () => {
+
                 if (finished) return;
 
                 finished = true;
 
-                audio.removeEventListener("ended", finish);
-                audio.removeEventListener("error", finish);
+                audio.removeEventListener(
+                    "ended",
+                    finish
+                );
+
+                audio.removeEventListener(
+                    "error",
+                    finish
+                );
 
                 resolve();
+
             };
 
-            audio.addEventListener("ended", finish);
-            audio.addEventListener("error", finish);
+            audio.addEventListener(
+                "ended",
+                finish
+            );
 
-            const promise = audio.play();
+            audio.addEventListener(
+                "error",
+                finish
+            );
 
-            if (promise && typeof promise.catch === "function") {
-                promise.catch(() => {
+            const playPromise = audio.play();
+
+            if (playPromise) {
+
+                playPromise.catch(() => {
+
                     finish();
+
                 });
+
             }
 
         } catch (error) {
+
             resolve();
+
         }
+
     });
+
 }
 
 
-/* -----------------------------
-   9. PLAY VIDEO
------------------------------ */
+/* ==========================================
+   PLAY VIDEO
+========================================== */
 
-function playVideo(fileName, onFinished) {
+function playVideo(fileName, afterVideo) {
 
-    const sequence = ++videoSequence;
+    if (!video) return;
 
-    lockNoteButtons();
+    const request = ++videoRequest;
+
+    lockButtons();
 
     video.pause();
 
@@ -186,263 +270,318 @@ function playVideo(fileName, onFinished) {
     video.onerror = null;
 
     video.src = fileName;
+
     video.load();
 
-    video.onended = () => {
+    let finished = false;
 
-        if (sequence !== videoSequence) return;
+    const finishVideo = () => {
 
-        video.onended = null;
-        video.onerror = null;
+        if (finished) return;
 
-        if (typeof onFinished === "function") {
-            onFinished();
-        }
-    };
+        if (request !== videoRequest) return;
 
-    video.onerror = () => {
-
-        if (sequence !== videoSequence) return;
+        finished = true;
 
         video.onended = null;
         video.onerror = null;
 
-        if (typeof onFinished === "function") {
-            onFinished();
+        if (typeof afterVideo === "function") {
+
+            afterVideo();
+
         }
+
     };
 
-    video.currentTime = 0;
+    video.onended = finishVideo;
+
+    video.onerror = finishVideo;
 
     const playPromise = video.play();
 
-    if (playPromise && typeof playPromise.catch === "function") {
+    if (playPromise) {
 
         playPromise.catch(() => {
 
             /*
-             * The first click is already a user action,
-             * so normally the video will play.
-             * If the browser blocks it, the game remains stable.
+             * Video playback can be restricted
+             * by the browser.
              */
+
         });
+
     }
+
 }
 
 
-/* -----------------------------
-   10. START GAME
------------------------------ */
+/* ==========================================
+   START GAME
+========================================== */
 
 function startGame() {
 
     if (gameStarted) return;
 
     gameStarted = true;
+
     score = 0;
-    previousNote = null;
+
     currentNote = null;
+    previousNote = null;
 
     updateScore();
-    setFeedback("");
 
-    lockNoteButtons();
+    showMessage("");
 
-    startButton.style.display = "none";
+    lockButtons();
 
-    /*
-     * First video:
-     * GREETING
-     */
+    if (startButton) {
 
-    playVideo(VIDEOS.greeting, () => {
+        startButton.style.display = "none";
 
-        /*
-         * After Greeting:
-         * choose a question
-         */
+    }
 
-        startNextQuestion();
 
-    });
+    /* --------------------------------------
+       1. GREETING
+    -------------------------------------- */
+
+    playVideo(
+        VIDEOS.greeting,
+        () => {
+
+            /* --------------------------------
+               2. FIRST QUESTION
+            -------------------------------- */
+
+            startQuestion();
+
+        }
+    );
+
 }
 
 
-/* -----------------------------
-   11. START NEXT QUESTION
------------------------------ */
+/* ==========================================
+   START QUESTION
+========================================== */
 
-function startNextQuestion() {
+function startQuestion() {
 
     if (!gameStarted) return;
 
-    lockNoteButtons();
+    lockButtons();
 
-    setFeedback("");
+    showMessage("");
 
     chooseNextNote();
 
-    /*
-     * First show Task_Prompt.
-     */
 
-    playVideo(VIDEOS.task, async () => {
+    /* --------------------------------------
+       TASK VIDEO
+    -------------------------------------- */
 
-        /*
-         * After question video:
-         * play the correct note audio.
-         */
+    playVideo(
+        VIDEOS.task,
+        async () => {
 
-        await playNote(currentNote);
+            /* -------------------------------
+               PLAY CORRECT NOTE
+            ------------------------------- */
 
-        /*
-         * Now the child can answer.
-         */
+            await playNote(currentNote);
 
-        if (gameStarted) {
-            unlockNoteButtons();
+
+            /* -------------------------------
+               ENABLE ANSWERS
+            ------------------------------- */
+
+            if (gameStarted) {
+
+                unlockButtons();
+
+            }
+
         }
-    });
+    );
+
 }
 
 
-/* -----------------------------
-   12. HANDLE NOTE CLICK
------------------------------ */
+/* ==========================================
+   HANDLE NOTE
+========================================== */
 
-async function handleNoteClick(selectedNote, button) {
+async function handleNote(
+    selectedNote,
+    clickedButton
+) {
 
     if (!gameStarted) return;
+
     if (gameLocked) return;
+
     if (!currentNote) return;
 
-    /*
-     * Immediately lock all buttons.
-     * This prevents multiple clicks.
-     */
 
-    lockNoteButtons();
+    /* --------------------------------------
+       LOCK ALL BUTTONS
+    -------------------------------------- */
 
-    /*
-     * Play the note that the child selected.
-     */
+    lockButtons();
+
+
+    /* --------------------------------------
+       PLAY SELECTED NOTE
+    -------------------------------------- */
 
     await playNote(selectedNote);
 
 
-    /* -------------------------
+    /* ======================================
        CORRECT ANSWER
-    ------------------------- */
+    ====================================== */
 
     if (selectedNote === currentNote) {
 
-        button.classList.add("correct");
+        clickedButton.classList.add("correct");
 
         score++;
+
         updateScore();
 
-        setFeedback("Баракалла! Тўғри топдингиз!");
+        showMessage(
+            "Баракалла! Тўғри топдингиз!"
+        );
 
-        /*
-         * Praise video
-         */
 
-        playVideo(VIDEOS.praise, () => {
+        /* ----------------------------------
+           ALI PRAISE
+        ---------------------------------- */
 
-            /*
-             * Automatically continue
-             * with a new question.
-             */
+        playVideo(
+            VIDEOS.praise,
+            () => {
 
-            startNextQuestion();
+                /* --------------------------
+                   NEW QUESTION
+                -------------------------- */
 
-        });
+                startQuestion();
+
+            }
+        );
 
         return;
+
     }
 
 
-    /* -------------------------
+    /* ======================================
        WRONG ANSWER
-    ------------------------- */
+    ====================================== */
 
-    button.classList.add("wrong");
+    clickedButton.classList.add("wrong");
 
-    setFeedback("Яна уриниб кўринг!");
+    showMessage(
+        "Яна уриниб кўринг!"
+    );
 
-    /*
-     * Encouragement video.
-     * IMPORTANT:
-     * currentNote DOES NOT change.
-     */
 
-    playVideo(VIDEOS.encouragement, async () => {
+    /* --------------------------------------
+       ALI ENCOURAGEMENT
+    -------------------------------------- */
 
-        /*
-         * Repeat the SAME question.
-         */
+    playVideo(
+        VIDEOS.encouragement,
+        async () => {
 
-        setFeedback("Яна бир марта тингланг!");
+            /*
+             * IMPORTANT:
+             * currentNote DOES NOT CHANGE.
+             *
+             * The child gets another chance
+             * at the SAME question.
+             */
 
-        await playNote(currentNote);
+            showMessage(
+                "Яна бир марта тингланг!"
+            );
 
-        /*
-         * Let the child try again.
-         */
+            await playNote(currentNote);
 
-        if (gameStarted) {
-            unlockNoteButtons();
+
+            /* ------------------------------
+               TRY AGAIN
+            ------------------------------ */
+
+            if (gameStarted) {
+
+                unlockButtons();
+
+            }
+
         }
-    });
+    );
+
 }
 
 
-/* -----------------------------
-   13. CONNECT NOTE BUTTONS
------------------------------ */
+/* ==========================================
+   CONNECT NOTE BUTTONS
+========================================== */
 
 noteButtons.forEach((button) => {
 
-    button.addEventListener("click", () => {
+    button.addEventListener(
+        "click",
+        () => {
 
-        const selectedNote = button.getAttribute("data-note");
+            const selectedNote =
+                button.getAttribute("data-note");
 
-        if (!selectedNote) return;
+            if (!selectedNote) return;
 
-        handleNoteClick(selectedNote, button);
+            handleNote(
+                selectedNote,
+                button
+            );
 
-    });
+        }
+    );
 
 });
 
 
-/* -----------------------------
-   14. INITIAL STATE
------------------------------ */
+/* ==========================================
+   INITIAL STATE
+========================================== */
 
-lockNoteButtons();
+lockButtons();
+
 
 if (video) {
+
     video.pause();
+
     video.controls = false;
+
     video.preload = "auto";
+
 }
+
 
 if (startButton) {
+
     startButton.style.display = "block";
+
 }
 
 
-/* -----------------------------
-   15. GLOBAL START FUNCTION
------------------------------ */
-
-/*
- * index.html uses:
- *
- * onclick="startGame()"
- *
- * Therefore startGame must be available globally.
- */
+/* ==========================================
+   GLOBAL START FUNCTION
+========================================== */
 
 window.startGame = startGame;
