@@ -1,4 +1,3 @@
-
 "use strict";
  
 /* ================================
@@ -32,6 +31,29 @@ const startButton = document.getElementById("startGameBtn");
 const scoreText = document.getElementById("score");
 const feedback = document.getElementById("feedbackText");
 const buttons = [...document.querySelectorAll(".note-btn")];
+ 
+ 
+/*
+  VAQTINCHALIK KUZATUV (DEBUG) OYNACHASI:
+  Ekranning yuqori chap burchagida kichik yozuv sifatida
+  chiqadi — hech qanday HTML/CSS faylga tegmasdan, shu yerda
+  JavaScript orqali yaratiladi. Muammo topilgach, shu blokni
+  butunlay o'chirib tashlash mumkin.
+*/
+const debugBox = document.createElement("div");
+debugBox.style.position = "fixed";
+debugBox.style.top = "4px";
+debugBox.style.left = "4px";
+debugBox.style.zIndex = "99999";
+debugBox.style.background = "rgba(0,0,0,0.75)";
+debugBox.style.color = "#0f0";
+debugBox.style.fontSize = "12px";
+debugBox.style.fontFamily = "monospace";
+debugBox.style.padding = "4px 8px";
+debugBox.style.borderRadius = "6px";
+debugBox.style.whiteSpace = "pre-line";
+debugBox.textContent = "DEBUG: kutilmoqda...";
+document.body.appendChild(debugBox);
  
  
 /* ================================
@@ -171,6 +193,16 @@ function newQuestion() {
       mumkin bo'lgan) javoblarni endi hisobga olmaymiz.
     */
     questionToken++;
+ 
+    /*
+      VAQTINCHALIK KUZATUV (DEBUG):
+      Dastur aslida qaysi notani kutayotganini konsolga
+      va ekranga chiqaramiz. Muammoni topgach, buni olib
+      tashlash mumkin.
+    */
+    console.log("[DEBUG] Yangi savol — kutilayotgan nota:", currentNote);
+ 
+    debugBox.textContent = "DEBUG\nKutilayotgan nota: " + currentNote;
  
     return questionToken;
  
@@ -768,12 +800,32 @@ buttons.forEach(function(button) {
                       endi ahamiyatsiz.
                     */
                     if (!started || token !== questionToken) {
+                        console.log(
+                            "[DEBUG] Bu javob eskirgan, e'tiborga olinmadi. Bosilgan:",
+                            selected,
+                            "| O'sha paytdagi kutilgan:",
+                            expectedNote
+                        );
                         return;
                     }
  
                     /*
                       Javobni tekshiramiz
                     */
+ 
+                    console.log(
+                        "[DEBUG] Bosilgan nota:",
+                        selected,
+                        "| Kutilgan nota:",
+                        expectedNote,
+                        "| Natija:",
+                        (selected === expectedNote) ? "TO'G'RI" : "NOTO'G'RI"
+                    );
+ 
+                    debugBox.textContent =
+                        "DEBUG\nBosilgan: " + selected +
+                        "\nKutilgan: " + expectedNote +
+                        "\nNatija: " + ((selected === expectedNote) ? "TO'G'RI" : "NOTO'G'RI");
  
                     if (
                         selected === expectedNote
